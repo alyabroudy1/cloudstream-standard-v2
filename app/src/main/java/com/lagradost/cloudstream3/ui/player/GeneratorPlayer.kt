@@ -105,6 +105,7 @@ import com.lagradost.cloudstream3.utils.DataStoreHelper.getViewPos
 import com.lagradost.cloudstream3.utils.EpisodeSkip
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.LazyExtractorLink
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.SingleSelectionHelper.showDialog
@@ -488,8 +489,31 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
     }
 
+    private var currentLazyJob: Job? = null
+
     private fun loadLink(link: Pair<ExtractorLink?, ExtractorUri?>?, sameEpisode: Boolean) {
         if (link == null) return
+
+        if (link.first is LazyExtractorLink) {
+            currentLazyJob?.cancel()
+            startLoading()
+            currentLazyJob = ioSafe {
+                val lazyLink = link.first as LazyExtractorLink
+                val realLink = lazyLink.getRealLink()
+                runOnMainThread {
+                    if (realLink != null) {
+                        viewModel.replaceLazyLink(lazyLink, realLink)
+                        loadLink(realLink to link.second, sameEpisode)
+                    } else {
+                        val ctx = context ?: return@runOnMainThread
+                        val errorMessage = txt("Failed to load link: ${lazyLink.name}").asString(ctx)
+                        playerError(com.lagradost.cloudstream3.ErrorLoadingException(errorMessage))
+                        binding?.playerLoadingOverlay?.isVisible = false
+                    }
+                }
+            }
+            return
+        }
 
         // manage UI
         binding?.playerLoadingOverlay?.isVisible = false
@@ -1577,6 +1601,7 @@ class GeneratorPlayer : FullScreenPlayer() {
     }
 
     override fun onDestroy() {
+        currentLazyJob?.cancel()
         ResultFragment.updateUI()
         currentVerifyLink?.cancel()
         super.onDestroy()
@@ -2100,6 +2125,7 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
 
         binding?.playerLoadingGoBack?.setOnClickListener {
+            currentLazyJob?.cancel()
             exitFullscreen()
             player.release()
             activity?.popCurrentPage()
