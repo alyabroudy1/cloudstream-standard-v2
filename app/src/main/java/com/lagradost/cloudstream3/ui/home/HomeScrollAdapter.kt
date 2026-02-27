@@ -49,7 +49,7 @@ class HomeScrollAdapter(
 
         when (binding) {
             is HomeScrollViewBinding -> {
-                binding.homeScrollPreview.loadImage(posterUrl)
+                binding.homeScrollPreview.loadImage(posterUrl, headers = item.posterHeaders)
                 binding.homeScrollPreviewTags.apply {
                     text = item.tags?.joinToString(" • ") ?: ""
                     isGone = item.tags.isNullOrEmpty()
@@ -63,7 +63,7 @@ class HomeScrollAdapter(
                 binding.homeScrollPreview.setOnClickListener { view ->
                     callback.invoke(view ?: return@setOnClickListener, position, item)
                 }
-                binding.homeScrollPreview.loadImage(posterUrl)
+                binding.homeScrollPreview.loadImage(posterUrl, headers = item.posterHeaders)
             }
         }
     }
