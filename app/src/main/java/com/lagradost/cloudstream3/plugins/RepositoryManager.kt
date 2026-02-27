@@ -173,6 +173,17 @@ object RepositoryManager {
         }
     }
 
+    suspend fun addPrebuiltRepository(repository: RepositoryData): Boolean {
+        repoLock.withLock {
+            val currentRepos = getRepositories()
+            if (currentRepos.none { it.url == repository.url }) {
+                setKey(REPOSITORIES_KEY, currentRepos + repository)
+                return true
+            }
+            return false
+        }
+    }
+
     /**
      * Also deletes downloaded repository plugins
      * */

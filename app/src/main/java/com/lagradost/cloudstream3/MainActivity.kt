@@ -90,6 +90,7 @@ import com.lagradost.cloudstream3.network.initClient
 import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.plugins.PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins
 import com.lagradost.cloudstream3.plugins.PluginManager.loadSinglePlugin
+import com.lagradost.cloudstream3.plugins.RepositoryManager
 import com.lagradost.cloudstream3.receivers.VideoDownloadRestartReceiver
 import com.lagradost.cloudstream3.services.SubscriptionWorkManager
 import com.lagradost.cloudstream3.syncproviders.AccountManager
@@ -1322,6 +1323,35 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     mainPluginsLoadedEvent.invoke(loadSinglePlugin(this@MainActivity, homeApi))
                 } ?: run {
                     mainPluginsLoadedEvent.invoke(false)
+                }
+
+                // Auto-add OmarC repository BEFORE plugin loading so its plugins are included
+                val omarCRepoUrl = "https://raw.githubusercontent.com/alyabroudy1/omarC/main/repo.json"
+                val isNewlyAdded = RepositoryManager.addPrebuiltRepository(
+                    com.lagradost.cloudstream3.ui.settings.extensions.RepositoryData(
+                        "OmarC",
+                        omarCRepoUrl
+                    )
+                )
+
+                // If first-time install, force-download & load all OmarC plugins
+                if (isNewlyAdded) {
+                    try {
+                        val repoPlugins = RepositoryManager.getRepoPlugins(omarCRepoUrl)
+                        repoPlugins?.forEach { (repoUrl, sitePlugin) ->
+                            if (sitePlugin.url.isNotBlank()) {
+                                PluginManager.downloadPlugin(
+                                    this@MainActivity,
+                                    sitePlugin.url,
+                                    sitePlugin.internalName,
+                                    repoUrl,
+                                    true // load immediately
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        com.lagradost.api.Log.e("MainActivity", "Failed to auto-download OmarC plugins: ${e.message}")
+                    }
                 }
 
                 ioSafe {
