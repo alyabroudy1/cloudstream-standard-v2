@@ -896,4 +896,8 @@
     <string name="reload_provider">Reload Provider</string>
 	<string name="name">Name</string>
     <string name="resolution_and_name">Resolution and name</string>
+    <string name="cast_to_device">Cast to device</string>
+    <string name="casting_prefix_format">Casting to %s</string>
+    <string name="scan_for_devices">Scan for devices</string>
+    <string name="scanning_for_devices">Scanning for devices…</string>
 </resources>

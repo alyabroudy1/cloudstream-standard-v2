@@ -109,6 +109,22 @@
                     android:nextFocusUp="@id/result_back"
                     android:nextFocusDown="@id/result_description"
                     android:nextFocusLeft="@id/result_favorite"
+                    android:nextFocusRight="@id/result_share"
+
+                    android:id="@+id/result_cast"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="5dp"
+                    android:elevation="10dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_baseline_cast_connected_24"
+                    android:layout_gravity="end|center_vertical"
+                    app:tint="?attr/textColor" />
+
+            <ImageView
+                    android:nextFocusUp="@id/result_back"
+                    android:nextFocusDown="@id/result_description"
+                    android:nextFocusLeft="@id/result_cast"
                     android:nextFocusRight="@id/result_open_in_browser"
 
                     android:id="@+id/result_share"

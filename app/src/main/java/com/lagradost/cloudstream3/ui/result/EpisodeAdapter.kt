@@ -62,6 +62,8 @@ const val ACTION_MARK_AS_WATCHED = 18
 
 const val TV_EP_SIZE = 400
 const val ACTION_MARK_WATCHED_UP_TO_THIS_EPISODE = 19
+const val ACTION_CAST_EPISODE = 20
+const val ACTION_CAST_MIRROR = 21
 
 data class EpisodeClickEvent(val position: Int?, val action: Int, val data: ResultEpisode) {
     constructor(action: Int, data: ResultEpisode) : this(null, action, data)

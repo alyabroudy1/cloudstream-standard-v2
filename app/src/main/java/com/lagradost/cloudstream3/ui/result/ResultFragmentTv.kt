@@ -329,6 +329,7 @@ class ResultFragmentTv : Fragment() {
                 resultFavoriteButton to resultFavoriteText,
                 resultSubscribeButton to resultSubscribeText,
                 resultSearchButton to resultSearchText,
+                resultCastActionButton to resultCastActionText,
                 resultEpisodesShowButton to resultEpisodesShowText
             ).forEach { (button, text) ->
 
@@ -359,6 +360,25 @@ class ResultFragmentTv : Fragment() {
                 // toggle, to make it more touch accessible just in case someone thinks that a
                 // tv layout is better but is using a touch device
                 toggleEpisodes(!episodeHolderTv.isVisible)
+            }
+
+            resultCastActionButton.setOnClickListener {
+                val movie = (viewModel.movie.value as? Resource.Success)?.value?.second
+                if (movie != null) {
+                    viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, movie))
+                    return@setOnClickListener
+                }
+                val resume = viewModel.resumeWatching.value
+                if (resume != null) {
+                    viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, resume.result))
+                    return@setOnClickListener
+                }
+                val firstEp = (viewModel.episodes.value as? Resource.Success)?.value?.firstOrNull()
+                if (firstEp != null) {
+                    viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, firstEp))
+                } else {
+                    CommonActivity.showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
+                }
             }
 
             resultEpisodes.setLinearListLayout(
@@ -464,6 +484,7 @@ class ResultFragmentTv : Fragment() {
                 binding?.resultBookmark,
                 binding?.resultFavorite,
                 binding?.resultSubscribe,
+                binding?.resultCastAction,
             ).firstOrNull {
                 it?.isVisible == true
             }

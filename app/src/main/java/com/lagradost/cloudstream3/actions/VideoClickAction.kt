@@ -28,6 +28,9 @@ import com.lagradost.cloudstream3.actions.temp.VlcNightlyPackage
 import com.lagradost.cloudstream3.actions.temp.VlcPackage
 import com.lagradost.cloudstream3.actions.temp.WebVideoCastPackage
 import com.lagradost.cloudstream3.actions.temp.fcast.FcastAction
+import com.lagradost.cloudstream3.cast.actions.CloudStreamCastAction
+import com.lagradost.cloudstream3.cast.actions.DlnaCastAction
+import com.lagradost.cloudstream3.cast.actions.ShareToAppAction
 import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.ui.result.LinkLoadingResult
 import com.lagradost.cloudstream3.ui.result.ResultEpisode
@@ -54,6 +57,9 @@ object VideoClickActionHolder {
         NextPlayerPackage(),
         JustPlayerPackage(),
         FcastAction(),
+        DlnaCastAction(),
+        CloudStreamCastAction(),
+        ShareToAppAction(),
         LibreTorrentPackage(),
         BiglyBTPackage(),
         // forks/backup apps

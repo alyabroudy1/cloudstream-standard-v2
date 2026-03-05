@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cast_controller_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E6000000"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Close button -->
+        <ImageButton
+            android:id="@+id/cast_controller_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close"
+            android:src="@drawable/ic_baseline_close_24"
+            android:tint="@android:color/white" />
+
+        <!-- Poster -->
+        <ImageView
+            android:id="@+id/cast_controller_poster"
+            android:layout_width="200dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:contentDescription="Poster"
+            android:scaleType="centerCrop" />
+
+        <!-- Device name -->
+        <TextView
+            android:id="@+id/cast_controller_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:textColor="#B0FFFFFF"
+            android:textSize="13sp" />
+
+        <!-- Episode title -->
+        <TextView
+            android:id="@+id/cast_controller_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Time labels + seek bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/cast_controller_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="#B0FFFFFF"
+                android:textSize="12sp" />
+
+            <SeekBar
+                android:id="@+id/cast_controller_seek"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="1000"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+
+            <TextView
+                android:id="@+id/cast_controller_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="#B0FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Transport controls -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/cast_controller_prev"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Previous episode"
+                android:src="@drawable/baseline_skip_previous_24"
+                android:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/cast_controller_play_pause"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Play/Pause"
+                android:src="@drawable/video_pause"
+                android:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/cast_controller_next"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Next episode"
+                android:src="@drawable/ic_baseline_skip_next_24"
+                android:tint="@android:color/white" />
+
+            <ImageButton
+                android:id="@+id/cast_controller_stop"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Stop"
+                android:src="@drawable/baseline_stop_24"
+                android:tint="@android:color/white" />
+        </LinearLayout>
+
+        <!-- Volume -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Volume"
+                android:src="@drawable/ic_baseline_volume_up_24"
+                android:tint="#B0FFFFFF" />
+
+            <SeekBar
+                android:id="@+id/cast_controller_volume"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:max="100"
+                android:progress="100" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

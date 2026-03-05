@@ -812,6 +812,25 @@ open class ResultFragmentPhone : FullScreenPlayer() {
                             QuickSearchFragment.pushSearch(activity, d.title)
                         }
 
+                        resultCast.setOnClickListener {
+                            val movie = (viewModel.movie.value as? Resource.Success)?.value?.second
+                            if (movie != null) {
+                                viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, movie))
+                                return@setOnClickListener
+                            }
+                            val resume = viewModel.resumeWatching.value
+                            if (resume != null) {
+                                viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, resume.result))
+                                return@setOnClickListener
+                            }
+                            val firstEp = (viewModel.episodes.value as? Resource.Success)?.value?.firstOrNull()
+                            if (firstEp != null) {
+                                viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, firstEp))
+                            } else {
+                                showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
+                            }
+                        }
+
                         resultShare.setOnClickListener {
                             try {
                                 val i = Intent(Intent.ACTION_SEND)

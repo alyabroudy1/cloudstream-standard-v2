@@ -681,4 +681,23 @@
         android:name="com.lagradost.cloudstream3.ui.EasterEggMonkeFragment"
         tools:layout="@layout/fragment_easter_egg_monke"
         android:label="EasterEggMonkeFragment" />
+    <fragment
+        android:id="@+id/navigation_cast_controller"
+        android:name="com.lagradost.cloudstream3.cast.ui.CastControllerFragment"
+        android:layout_height="match_parent"
+        android:label="Cast Controller"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/enter_anim"
+        app:popExitAnim="@anim/exit_anim"
+        tools:layout="@layout/fragment_cast_controller" />
+
+    <action
+        android:id="@+id/global_to_navigation_cast_controller"
+        app:destination="@id/navigation_cast_controller"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/enter_anim"
+        app:popExitAnim="@anim/exit_anim" />
+
 </navigation>

@@ -26,6 +26,14 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.LoadResponse.Companion.getAniListId
 import com.lagradost.cloudstream3.LoadResponse.Companion.getMalId
 import com.lagradost.cloudstream3.LoadResponse.Companion.isMovie
+import com.lagradost.cloudstream3.cast.CastHeaderManager
+import com.lagradost.cloudstream3.cast.CastDevice
+import com.lagradost.cloudstream3.cast.CastMediaPayload
+import com.lagradost.cloudstream3.cast.CastEpisodeContext
+import com.lagradost.cloudstream3.cast.CastLinkLoader
+import com.lagradost.cloudstream3.cast.CastSessionManager
+import com.lagradost.cloudstream3.cast.LinkLoadResult
+import com.lagradost.cloudstream3.cast.CastSubtitle
 import com.lagradost.cloudstream3.LoadResponse.Companion.readIdFromString
 import com.lagradost.cloudstream3.metaproviders.SyncRedirector
 import com.lagradost.cloudstream3.mvvm.*
@@ -405,6 +413,125 @@ class ResultViewModel2 : ViewModel() {
         val dubStatus: DubStatus,
         val season: Int,
     )
+
+    private fun showCustomCastDevicePicker(
+        video: ResultEpisode,
+        links: List<ExtractorLink>? = null,
+        subs: List<SubtitleData>? = null,
+        startIndex: Int? = null
+    ) {
+        val devices = CastSessionManager.allDevices.value
+        val options = devices.map<CastDevice, UiText> {
+            UiText.DynamicString("${it.name} (${it.type})")
+        }.toMutableList<UiText>()
+        options.add(txt(R.string.scan_for_devices))
+
+        postPopup(txt(R.string.cast_to_device), options) { index ->
+            if (index == null) return@postPopup
+            if (index == devices.size) {
+                // Scan option — re-trigger discovery
+                val ctx = context ?: return@postPopup
+                CastSessionManager.startAllDiscovery(ctx)
+                showToast(R.string.scanning_for_devices, Toast.LENGTH_SHORT)
+                return@postPopup
+            }
+
+            val device = devices.getOrNull(index) ?: return@postPopup
+
+            if (links != null && subs != null && startIndex != null) {
+                // Links already available — cast directly
+                viewModelScope.launchSafe {
+                    performCast(device, video, links, subs, startIndex)
+                }
+            } else {
+                // Need to load links first
+                loadLinks(video, isVisible = true, isCasting = true) { result ->
+                    if (result.links.isEmpty()) {
+                        showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
+                        return@loadLinks
+                    }
+                    performCast(device, video, result.links, result.subs, 0)
+                }
+            }
+        }
+    }
+
+    private suspend fun performCast(
+        device: CastDevice,
+        video: ResultEpisode,
+        castLinks: List<ExtractorLink>,
+        castSubs: List<SubtitleData>,
+        linkIndex: Int
+    ) {
+        try {
+            val session = CastSessionManager.connect(device)
+
+            val link = castLinks.getOrNull(linkIndex) ?: castLinks.first()
+            val readyLink = CastHeaderManager.prepareForCast(
+                link, device, CastSessionManager.relay
+            )
+
+            val subtitles = castSubs.map { sub ->
+                CastSubtitle(
+                    url = sub.url,
+                    language = sub.languageCode ?: "",
+                    label = sub.name,
+                    mimeType = sub.mimeType
+                )
+            }
+
+            val payload = CastMediaPayload(
+                url = readyLink.url,
+                mimeType = readyLink.mimeType,
+                title = video.name,
+                subtitles = subtitles,
+                startPositionMs = video.getRealPosition(),
+                headers = CastHeaderManager.buildFullHeaders(link),
+                isRelayed = readyLink.isRelayed,
+                metadata = if (readyLink.streamId != null) {
+                    mapOf("relayStreamId" to readyLink.streamId)
+                } else emptyMap()
+            )
+
+            session.loadMedia(payload)
+
+            // Store episode context for auto-play and expanded controller
+            val allEpisodes = currentEpisodes.values.flatten()
+            val episodeIndex = allEpisodes.indexOfFirst { it.id == video.id }
+            if (episodeIndex >= 0) {
+                CastSessionManager.updateEpisodeContext(
+                    CastEpisodeContext(
+                        currentEpisode = video,
+                        allEpisodes = allEpisodes,
+                        currentIndex = episodeIndex,
+                        links = castLinks,
+                        subs = castSubs,
+                        showPosterUrl = currentResponse?.posterUrl
+                    )
+                )
+            }
+
+            // Register link loader for auto-play and episode navigation
+            CastSessionManager.linkLoader = CastLinkLoader { episode ->
+                try {
+                    kotlin.coroutines.suspendCoroutine<LinkLoadResult?> { cont ->
+                        loadLinks(episode, isVisible = false, isCasting = true) { result ->
+                            if (result.links.isEmpty()) {
+                                cont.resumeWith(Result.success(null))
+                            } else {
+                                cont.resumeWith(Result.success(LinkLoadResult(result.links, result.subs)))
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("ResultViewModel2", "Cast failed: ${e.message}", e)
+            showToast(R.string.unexpected_error, Toast.LENGTH_SHORT)
+        }
+    }
 
     /** map<dub, map<season, List<episode>>> */
     private var currentEpisodes: Map<EpisodeIndexer, List<ResultEpisode>> = mapOf()
@@ -1508,6 +1635,8 @@ class ResultViewModel2 : ViewModel() {
                 }
 
                 options.add(txt(R.string.episode_action_play_in_app) to ACTION_PLAY_EPISODE_IN_PLAYER)
+                options.add(txt(R.string.cast_to_device) to ACTION_CAST_EPISODE)
+                options.add(txt(R.string.episode_action_cast_mirror) to ACTION_CAST_MIRROR)
                 options.addAll(
                     listOf(
                         txt(R.string.episode_action_auto_download) to ACTION_DOWNLOAD_EPISODE,
@@ -1680,6 +1809,21 @@ class ResultViewModel2 : ViewModel() {
 
             ACTION_CHROME_CAST_EPISODE -> {
                 startChromecast(activity, click.data)
+            }
+
+            ACTION_CAST_EPISODE -> {
+                showCustomCastDevicePicker(click.data)
+            }
+
+            ACTION_CAST_MIRROR -> {
+                acquireSingleLink(
+                    click.data,
+                    LOADTYPE_ALL,
+                    txt(R.string.cast_to_device),
+                    isCasting = true
+                ) { (result, index) ->
+                    showCustomCastDevicePicker(click.data, result.links, result.subs, index)
+                }
             }
 
             ACTION_PLAY_EPISODE_IN_PLAYER -> {

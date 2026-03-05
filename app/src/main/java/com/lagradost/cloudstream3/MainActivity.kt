@@ -430,6 +430,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
 
+    /** Cast receiver reference — stored so we can stop it in onDestroy(). */
+    private var castReceiver: com.lagradost.cloudstream3.cast.c2c.CloudStreamCastReceiver? = null
+
     var lastPopup: SearchResponse? = null
     fun loadPopup(result: SearchResponse, load: Boolean = true) {
         lastPopup = result
@@ -709,6 +712,16 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
         filesToDelete = setOf()
+
+        // Clean up cast resources
+        try {
+            castReceiver?.stop()
+            com.lagradost.cloudstream3.cast.CastAutoPlayManager.stopObserving()
+            com.lagradost.cloudstream3.cast.CastSessionManager.stopAllDiscovery()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cleaning up cast resources: ${e.message}")
+        }
+
         val broadcastIntent = Intent()
         broadcastIntent.action = "restart_service"
         broadcastIntent.setClass(this, VideoDownloadRestartReceiver::class.java)
@@ -1988,6 +2001,29 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
 
         FcastManager().init(this, false)
+
+        // TODO: Uncomment after splash hang is resolved
+        // Initialize cast framework off the main thread to avoid ANR
+        ioSafe {
+            com.lagradost.cloudstream3.cast.CastSessionManager.apply {
+                registerDiscovery(com.lagradost.cloudstream3.cast.dlna.DlnaDeviceDiscovery())
+                registerDiscovery(com.lagradost.cloudstream3.cast.c2c.CloudStreamDeviceDiscovery())
+                registerDiscovery(com.lagradost.cloudstream3.cast.googlecast.GoogleCastDeviceDiscovery())
+                startAllDiscovery(this@MainActivity)
+            }
+            com.lagradost.cloudstream3.cast.CastAutoPlayManager.startObserving()
+            // Start C2C receiver (auto-plays incoming casts)
+            castReceiver = com.lagradost.cloudstream3.cast.c2c.CloudStreamCastReceiver().apply {
+                onMediaReceived = { payload ->
+                    runOnUiThread {
+                        com.lagradost.cloudstream3.cast.CastPlayerLauncher.launch(
+                            this@MainActivity, payload
+                        )
+                    }
+                }
+                start(this@MainActivity)
+            }
+        }
 
         APIRepository.dubStatusActive = getApiDubstatusSettings()
 
