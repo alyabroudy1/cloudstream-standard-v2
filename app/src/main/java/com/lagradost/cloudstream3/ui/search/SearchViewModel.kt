@@ -31,6 +31,9 @@ data class ExpandableSearchList(
 
 const val SEARCH_HISTORY_KEY = "search_history"
 
+/** URL prefix used by lazy search placeholder SearchResponses */
+const val LAZY_SEARCH_PREFIX = "lazy://"
+
 class SearchViewModel : ViewModel() {
     private val _searchResponse: MutableLiveData<Resource<ExpandableSearchList>> =
         MutableLiveData()
@@ -49,6 +52,7 @@ class SearchViewModel : ViewModel() {
         _searchResponse.postValue(Resource.Success(ExpandableSearchList(emptyList(), 0, false)))
         _currentSearch.postValue(emptyMap())
         expandableSearches.clear()
+        lazyProviders.clear()
     }
 
     var lastQuery: String? = null
@@ -57,6 +61,9 @@ class SearchViewModel : ViewModel() {
      * Maps provider name to search list.
      * @see [HomeViewModel.expandable] */
     private val expandableSearches: MutableMap<String, ExpandableSearchList> = mutableMapOf()
+
+    /** Tracks providers that returned a lazy placeholder during search. Maps provider name → query. */
+    private val lazyProviders: MutableMap<String, String> = mutableMapOf()
 
     private var currentSearchIndex = 0
     private var onGoingSearch: Job? = null
@@ -205,6 +212,12 @@ class SearchViewModel : ViewModel() {
                         val searchValue = search.value
                         expandableSearches[a.name] =
                             ExpandableSearchList(searchValue.items, 1, searchValue.hasNext)
+
+                    // Track lazy placeholders so resolveLazySearch() knows the query
+                    if (searchValue.items.any { it.url.contains(LAZY_SEARCH_PREFIX) }) {
+                        lazyProviders[a.name] = query
+                        android.util.Log.d("LazySearch", "SearchViewModel -> saved lazy provider: ${a.name} for query: $query")
+                    }
                     }
 
                     _currentSearch.postValue(expandableSearches)
@@ -218,4 +231,50 @@ class SearchViewModel : ViewModel() {
                 _searchResponse.postValue(Resource.Success(list))
             }
         }
+
+    /**
+     * Resolves a lazy search placeholder: runs the FULL search (with CF WebView fallback)
+     * for a single provider that was previously blocked by Cloudflare.
+     * Called when the user taps a "Tap to search" placeholder card.
+     */
+    fun resolveLazySearch(providerName: String) = viewModelScope.launchSafe {
+        android.util.Log.d("LazySearch", "SearchViewModel.resolveLazySearch called for provider='$providerName'")
+        val query = lazyProviders.remove(providerName)
+        if (query == null) {
+            android.util.Log.e("LazySearch", "SearchViewModel -> No query found in lazyProviders for '$providerName'. Map contents: ${lazyProviders.keys}")
+            return@launchSafe
+        }
+        val repo = repos.find { it.name == providerName }
+        if (repo == null) {
+            android.util.Log.e("LazySearch", "SearchViewModel -> No repo found for providerName '$providerName'")
+            return@launchSafe
+        }
+
+        android.util.Log.d("LazySearch", "SearchViewModel -> Commencing full search for '$providerName' with query='$query'")
+        // Show loading (the existing row stays visible)
+        _searchResponse.postValue(Resource.Loading())
+
+        withContext(Dispatchers.IO) {
+            // Full search — this WILL trigger CF bypass WebView if needed
+            val search = try {
+                repo.search("LAZY_BYPASS:$query", 1)
+            } catch (e: Exception) {
+                Resource.Failure(false, e.message ?: "Failed lazy resolve")
+            }
+            android.util.Log.d("LazySearch", "SearchViewModel -> Search result for '$providerName' is $search")
+            if (search is Resource.Success) {
+                val searchValue = search.value
+                expandableSearches[providerName] =
+                    ExpandableSearchList(searchValue.items, 1, searchValue.hasNext)
+                android.util.Log.d("LazySearch", "SearchViewModel -> Updated expandableSearches with ${searchValue.items.size} items for '$providerName'")
+            } else {
+                android.util.Log.e("LazySearch", "SearchViewModel -> Full search failed. Removing '$providerName' from results.")
+                // CF solve failed entirely — remove the placeholder row
+                expandableSearches.remove(providerName)
+            }
+
+            _currentSearch.postValue(expandableSearches)
+            _searchResponse.postValue(Resource.Success(bundleSearch(expandableSearches)))
+        }
+    }
 }

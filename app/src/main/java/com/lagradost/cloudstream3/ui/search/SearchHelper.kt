@@ -19,12 +19,31 @@ import com.lagradost.cloudstream3.utils.DOWNLOAD_HEADER_CACHE
 import com.lagradost.cloudstream3.utils.DataStoreHelper
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.VideoDownloadHelper
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
+import com.lagradost.cloudstream3.ui.search.LAZY_SEARCH_PREFIX
 
 object SearchHelper {
     fun handleSearchClickCallback(callback: SearchClickCallback) {
         val card = callback.card
+        android.util.Log.d("LazySearch", "SearchHelper.handleSearchClickCallback -> action=${callback.action}, card.url=${card.url}")
         when (callback.action) {
             SEARCH_ACTION_LOAD -> {
+                // Intercept lazy search placeholder clicks
+                if (card.url.contains(LAZY_SEARCH_PREFIX)) {
+                    val providerName = card.url.substringAfter(LAZY_SEARCH_PREFIX)
+                    android.util.Log.d("LazySearch", "SearchHelper intercepted lazy URL. Extracting providerName='$providerName'")
+                    (activity as? FragmentActivity)?.let { act ->
+                        val searchViewModel = ViewModelProvider(act)[SearchViewModel::class.java]
+                        android.util.Log.d("LazySearch", "SearchHelper found ViewModel. Calling resolveLazySearch...")
+                        searchViewModel.resolveLazySearch(providerName)
+                    } ?: run {
+                        android.util.Log.e("LazySearch", "SearchHelper Activity is NOT FragmentActivity. Failed to get ViewModel. activity=$activity")
+                    }
+                    return
+                }
+                
+                android.util.Log.d("LazySearch", "SearchHelper passing normal URL to loadSearchResult...")
                 // Direct play for live/IPTV items — bypass the details page
                 if (card.type == TvType.Live) {
                     handleDirectPlay(card)
