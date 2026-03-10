@@ -14,6 +14,7 @@ import com.lagradost.cloudstream3.ui.download.DownloadClickEvent
 import com.lagradost.cloudstream3.ui.result.START_ACTION_LOAD_EP
 import com.lagradost.cloudstream3.utils.AppContextUtils.loadResult
 import com.lagradost.cloudstream3.utils.AppContextUtils.loadSearchResult
+import com.lagradost.cloudstream3.utils.AppContextUtils.handleDirectPlay
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.DOWNLOAD_HEADER_CACHE
 import com.lagradost.cloudstream3.utils.DataStoreHelper
@@ -45,7 +46,8 @@ object SearchHelper {
                 
                 android.util.Log.d("LazySearch", "SearchHelper passing normal URL to loadSearchResult...")
                 // Direct play for live/IPTV items — bypass the details page
-                if (card.type == TvType.Live) {
+                if (card.type == TvType.Live || card.url.contains(".m3u8")) {
+                    android.util.Log.d("LazySearch", "SearchHelper detected Live Stream. Invoking handleDirectPlay...")
                     handleDirectPlay(card)
                 } else {
                     loadSearchResult(card)
@@ -124,7 +126,6 @@ object SearchHelper {
             )
         )
 
-        // Navigate to result page with auto-play action
-        loadResult(card.url, card.apiName, card.name, START_ACTION_LOAD_EP, 0)
+        activity?.handleDirectPlay(card)
     }
 }

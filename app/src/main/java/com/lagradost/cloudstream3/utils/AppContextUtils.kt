@@ -105,9 +105,14 @@ import androidx.tvprovider.media.tv.TvContractCompat
 import com.lagradost.cloudstream3.SearchResponse
 import android.content.ContentUris
 import android.content.Intent
-
-
-
+import com.lagradost.cloudstream3.ui.result.buildResultEpisode
+import com.lagradost.cloudstream3.ui.player.RepoLinkGenerator
+import com.lagradost.cloudstream3.ui.player.GeneratorPlayer
+import com.lagradost.cloudstream3.APIHolder
+import com.lagradost.cloudstream3.LiveStreamLoadResponse
+import com.lagradost.cloudstream3.CommonActivity
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 object AppContextUtils {
     fun RecyclerView.setMaxViewPoolSize(maxViewTypeId: Int, maxPoolSize: Int) {
@@ -816,6 +821,64 @@ object AppContextUtils {
             )
         }
         //(this as? AppCompatActivity?)?.loadResult(card.url, card.apiName, startAction, startValue)
+    }
+
+    /**
+     * Direct play for TvType.Live items (e.g., IPTV channels).
+     * Bypasses the details page completely and launches ExoPlayer directly.
+     */
+    fun Activity?.handleDirectPlay(card: SearchResponse) {
+        val activity = this ?: return
+
+        ioSafe {
+            val repo = APIHolder.getApiFromNameNull(card.apiName) ?: return@ioSafe
+
+            // Fetch stream data
+            val loadResponse = try {
+                repo.load(card.url)
+            } catch (e: Exception) {
+                logError(e)
+                null
+            }
+
+            if (loadResponse != null) {
+                val parentId = card.id ?: card.url.hashCode()
+
+                // Construct a ResultEpisode representing the Live Stream
+                val episodes = listOf(
+                    buildResultEpisode(
+                        headerName = loadResponse.name,
+                        name = loadResponse.name,
+                        poster = loadResponse.posterUrl ?: card.posterUrl,
+                        episode = 0,
+                        seasonIndex = null,
+                        season = null,
+                        data = (loadResponse as? LiveStreamLoadResponse)?.dataUrl ?: loadResponse.url,
+                        apiName = loadResponse.apiName,
+                        id = parentId,
+                        index = 0,
+                        rating = null,
+                        description = loadResponse.plot,
+                        isFiller = false,
+                        tvType = loadResponse.type,
+                        parentId = parentId
+                    )
+                )
+
+                val generator = RepoLinkGenerator(episodes, page = loadResponse)
+
+                withContext(Dispatchers.Main) {
+                    activity.navigate(
+                        R.id.global_to_navigation_player,
+                        GeneratorPlayer.newInstance(generator, HashMap())
+                    )
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    CommonActivity.showToast("Failed to load stream", Toast.LENGTH_SHORT)
+                }
+            }
+        }
     }
 
     fun Activity.requestLocalAudioFocus(focusRequest: AudioFocusRequest?) {
