@@ -45,9 +45,11 @@ object SearchHelper {
                 }
                 
                 android.util.Log.d("LazySearch", "SearchHelper passing normal URL to loadSearchResult...")
-                // Direct play for live/IPTV items — bypass the details page
-                if (card.type == TvType.Live || card.url.contains(".m3u8")) {
-                    android.util.Log.d("LazySearch", "SearchHelper detected Live Stream. Invoking handleDirectPlay...")
+                // Direct play for live/IPTV items — bypass the details page only on TV
+                if ((card.type == TvType.Live || card.url.contains(".m3u8")) &&
+                    com.lagradost.cloudstream3.ui.settings.Globals.isLayout(com.lagradost.cloudstream3.ui.settings.Globals.TV)
+                ) {
+                    android.util.Log.d("LazySearch", "SearchHelper detected Live Stream on TV. Invoking handleDirectPlay...")
                     handleDirectPlay(card)
                 } else {
                     loadSearchResult(card)

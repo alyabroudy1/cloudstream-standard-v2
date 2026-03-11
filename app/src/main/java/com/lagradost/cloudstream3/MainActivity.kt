@@ -2005,13 +2005,15 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         // TODO: Uncomment after splash hang is resolved
         // Initialize cast framework off the main thread to avoid ANR
         ioSafe {
-            com.lagradost.cloudstream3.cast.CastSessionManager.apply {
-                registerDiscovery(com.lagradost.cloudstream3.cast.dlna.DlnaDeviceDiscovery())
-                registerDiscovery(com.lagradost.cloudstream3.cast.c2c.CloudStreamDeviceDiscovery())
-                registerDiscovery(com.lagradost.cloudstream3.cast.googlecast.GoogleCastDeviceDiscovery())
-                startAllDiscovery(this@MainActivity)
+            if (!isLayout(TV)) {
+                com.lagradost.cloudstream3.cast.CastSessionManager.apply {
+                    registerDiscovery(com.lagradost.cloudstream3.cast.dlna.DlnaDeviceDiscovery())
+                    registerDiscovery(com.lagradost.cloudstream3.cast.c2c.CloudStreamDeviceDiscovery())
+                    registerDiscovery(com.lagradost.cloudstream3.cast.googlecast.GoogleCastDeviceDiscovery())
+                    startAllDiscovery(this@MainActivity)
+                }
+                com.lagradost.cloudstream3.cast.CastAutoPlayManager.startObserving()
             }
-            com.lagradost.cloudstream3.cast.CastAutoPlayManager.startObserving()
             // Start C2C receiver (auto-plays incoming casts)
             castReceiver = com.lagradost.cloudstream3.cast.c2c.CloudStreamCastReceiver().apply {
                 onMediaReceived = { payload ->
