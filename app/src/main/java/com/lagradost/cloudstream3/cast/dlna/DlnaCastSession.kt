@@ -244,6 +244,7 @@ class DlnaCastSession(
                 try {
                     pollTransportState()
                     pollPosition()
+                    pollVolume()
                 } catch (e: Exception) {
                     Log.w(TAG, "Poll error: ${e.message}")
                     // Don't stop polling on transient errors
@@ -282,6 +283,28 @@ class DlnaCastSession(
             synchronized(listeners) {
                 listeners.forEach { it.onDurationReceived(duration) }
             }
+        }
+    }
+
+    private suspend fun pollVolume() {
+        val rcUrl = device.metadata["renderingControlUrl"] ?: return
+        try {
+            val response = soapActionOnUrl(
+                rcUrl,
+                "urn:schemas-upnp-org:service:RenderingControl:1",
+                "GetVolume",
+                "<InstanceID>0</InstanceID><Channel>Master</Channel>"
+            )
+            val volumeStr = Regex("<CurrentVolume>(\\d+)</CurrentVolume>")
+                .find(response)?.groupValues?.get(1)
+            val volume = volumeStr?.toIntOrNull()
+            if (volume != null) {
+                synchronized(listeners) {
+                    listeners.forEach { it.onVolumeChanged(volume / 100f) }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Volume poll failed: ${e.message}")
         }
     }
 

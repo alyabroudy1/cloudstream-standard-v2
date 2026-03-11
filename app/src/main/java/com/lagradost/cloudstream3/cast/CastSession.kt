@@ -95,6 +95,7 @@ interface CastSessionListener {
     fun onStateChanged(state: CastSessionState) {}
     fun onPositionChanged(positionMs: Long) {}
     fun onDurationReceived(durationMs: Long) {}
+    fun onVolumeChanged(volume: Float) {}
     fun onError(error: CastError) {}
     fun onDisconnected(reason: DisconnectReason) {}
 }

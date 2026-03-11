@@ -2,6 +2,7 @@ package com.lagradost.cloudstream3.cast
 
 import android.content.Context
 import com.lagradost.api.Log
+import com.lagradost.cloudstream3.cast.relay.CastRelayService
 import com.lagradost.cloudstream3.cast.relay.StreamRelayServer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -144,7 +145,16 @@ object CastSessionManager {
      * @return The connected [CastSession].
      */
     suspend fun connect(device: CastDevice): CastSession {
-        // Disconnect any existing session
+        // If already connected to the SAME device, reuse the existing session
+        val current = _activeSession.value
+        if (current != null && current.device.id == device.id &&
+            current.state.value != CastSessionState.DISCONNECTED &&
+            current.state.value != CastSessionState.ERROR) {
+            Log.d(TAG, "Reusing existing session to ${device.name}")
+            return current
+        }
+
+        // Disconnect any existing session (different device)
         disconnect()
 
         Log.d(TAG, "Connecting to ${device.name} (${device.type})")
@@ -152,6 +162,8 @@ object CastSessionManager {
         // Start relay if needed
         if (device.needsRelay) {
             relay.start(appContext)
+            // Keep relay alive when app is backgrounded
+            appContext?.let { CastRelayService.start(it) }
             Log.d(TAG, "Relay server started for ${device.name}")
         }
 
@@ -166,6 +178,7 @@ object CastSessionManager {
                     _activeSession.value = null
                     if (!hasRelayNeededSession()) {
                         relay.stop()
+                        appContext?.let { CastRelayService.stop(it) }
                     }
                 }
             }
@@ -204,11 +217,17 @@ object CastSessionManager {
 
         if (!hasRelayNeededSession()) {
             relay.stop()
+            appContext?.let { CastRelayService.stop(it) }
         }
     }
 
     /** Whether there is an active, connected session. */
-    fun isConnected(): Boolean = _activeSession.value != null
+    fun isConnected(): Boolean {
+        val session = _activeSession.value ?: return false
+        return session.state.value != CastSessionState.DISCONNECTED &&
+               session.state.value != CastSessionState.ERROR &&
+               session.state.value != CastSessionState.IDLE
+    }
 
     /** Get the current session, if any. */
     fun getActiveSession(): CastSession? = _activeSession.value

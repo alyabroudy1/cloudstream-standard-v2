@@ -23,6 +23,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.discord.panels.OverlappingPanelsLayout
 import com.discord.panels.PanelState
 import com.discord.panels.PanelsChildGestureRegionObserver
@@ -78,6 +79,7 @@ import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.colorFromAttribute
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.hideKeyboard
+import com.lagradost.cloudstream3.utils.UIHelper.navigate
 import com.lagradost.cloudstream3.utils.UIHelper.popCurrentPage
 import com.lagradost.cloudstream3.utils.UIHelper.populateChips
 import com.lagradost.cloudstream3.utils.UIHelper.popupMenuNoIconsAndNoStringRes
@@ -89,6 +91,7 @@ import java.net.URLEncoder
 import java.nio.charset.Charset
 import kotlin.io.encoding.Base64
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 open class ResultFragmentPhone : FullScreenPlayer() {
     private val gestureRegionsListener =
@@ -813,6 +816,38 @@ open class ResultFragmentPhone : FullScreenPlayer() {
                         }
 
                         resultCast.setOnClickListener {
+                            // Green icon = connected → show cast controls / disconnect dialog
+                            if (com.lagradost.cloudstream3.cast.CastSessionManager.isConnected()) {
+                                val deviceName = com.lagradost.cloudstream3.cast.CastSessionManager.activeSession.value?.device?.name ?: "TV"
+                                activity?.showBottomDialog(
+                                    listOf(
+                                        getString(R.string.cast_controls),
+                                        getString(R.string.disconnect_from_device)
+                                    ),
+                                    -1,
+                                    getString(R.string.casting_prefix_format, deviceName),
+                                    false,
+                                    {}
+                                ) { selectedIndex ->
+                                    when (selectedIndex) {
+                                        0 -> {
+                                            // Open full cast controller
+                                            activity.navigate(
+                                                R.id.global_to_navigation_cast_controller
+                                            )
+                                        }
+                                        1 -> {
+                                            // Disconnect
+                                            viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                                com.lagradost.cloudstream3.cast.CastSessionManager.disconnect()
+                                            }
+                                        }
+                                    }
+                                }
+                                return@setOnClickListener
+                            }
+
+                            // Gray icon = not connected → show device picker
                             val movie = (viewModel.movie.value as? Resource.Success)?.value?.second
                             if (movie != null) {
                                 viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, movie))
@@ -828,6 +863,24 @@ open class ResultFragmentPhone : FullScreenPlayer() {
                                 viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, firstEp))
                             } else {
                                 showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
+                            }
+                        }
+
+                        // Observe cast session state — green icon when connected, gray when not
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            com.lagradost.cloudstream3.cast.CastSessionManager.activeSession.collect { session ->
+                                if (session != null &&
+                                    session.state.value != com.lagradost.cloudstream3.cast.CastSessionState.DISCONNECTED &&
+                                    session.state.value != com.lagradost.cloudstream3.cast.CastSessionState.ERROR) {
+                                    resultCast.imageTintList = ColorStateList.valueOf(
+                                        android.graphics.Color.parseColor("#4CAF50")  // Material Green
+                                    )
+                                } else {
+                                    resultCast.imageTintList = ColorStateList.valueOf(
+                                        context?.colorFromAttribute(R.attr.textColor)
+                                            ?: android.graphics.Color.WHITE
+                                    )
+                                }
                             }
                         }
 

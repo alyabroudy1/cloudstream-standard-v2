@@ -34,6 +34,8 @@ import com.lagradost.cloudstream3.cast.CastLinkLoader
 import com.lagradost.cloudstream3.cast.CastSessionManager
 import com.lagradost.cloudstream3.cast.LinkLoadResult
 import com.lagradost.cloudstream3.cast.CastSubtitle
+import com.lagradost.cloudstream3.cast.CastDeviceType
+import com.lagradost.cloudstream3.cast.CastSessionState
 import com.lagradost.cloudstream3.LoadResponse.Companion.readIdFromString
 import com.lagradost.cloudstream3.metaproviders.SyncRedirector
 import com.lagradost.cloudstream3.mvvm.*
@@ -420,9 +422,29 @@ class ResultViewModel2 : ViewModel() {
         subs: List<SubtitleData>? = null,
         startIndex: Int? = null
     ) {
+        // Quick-cast: if already connected and no pre-selected links, cast directly
+        val activeSession = CastSessionManager.activeSession.value
+        if (activeSession != null && links == null &&
+            activeSession.state.value != CastSessionState.DISCONNECTED &&
+            activeSession.state.value != CastSessionState.ERROR) {
+            val device = activeSession.device
+            Log.d("ResultViewModel2", "Quick-cast to already connected ${device.name}")
+            loadLinks(video, isVisible = true, isCasting = true) { result ->
+                if (result.links.isEmpty()) {
+                    showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
+                    return@loadLinks
+                }
+                viewModelScope.launchSafe {
+                    performCast(device, video, result.links, result.subs, 0)
+                }
+            }
+            return
+        }
+
         val devices = CastSessionManager.allDevices.value
         val options = devices.map<CastDevice, UiText> {
-            UiText.DynamicString("${it.name} (${it.type})")
+            val suffix = if (activeSession?.device?.id == it.id) " ✓" else ""
+            UiText.DynamicString("${it.name} (${it.type})$suffix")
         }.toMutableList<UiText>()
         options.add(txt(R.string.scan_for_devices))
 
@@ -450,7 +472,11 @@ class ResultViewModel2 : ViewModel() {
                         showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
                         return@loadLinks
                     }
-                    performCast(device, video, result.links, result.subs, 0)
+                    // Launch performCast in viewModelScope so it survives
+                    // currentLoadLinkJob cancellation (which would kill DLNA connect)
+                    viewModelScope.launchSafe {
+                        performCast(device, video, result.links, result.subs, 0)
+                    }
                 }
             }
         }
@@ -466,7 +492,17 @@ class ResultViewModel2 : ViewModel() {
         try {
             val session = CastSessionManager.connect(device)
 
-            val link = castLinks.getOrNull(linkIndex) ?: castLinks.first()
+            // DLNA devices (Samsung TVs etc.) can't play HLS/DASH natively.
+            // Prefer direct VIDEO (MP4) links when casting to DLNA.
+            val link = if (device.type == CastDeviceType.DLNA) {
+                val directLink = castLinks.firstOrNull { it.type == ExtractorLinkType.VIDEO }
+                if (directLink != null) {
+                    Log.d("ResultViewModel2", "DLNA cast: preferring direct link '${directLink.name}' over index $linkIndex")
+                }
+                directLink ?: castLinks.getOrNull(linkIndex) ?: castLinks.first()
+            } else {
+                castLinks.getOrNull(linkIndex) ?: castLinks.first()
+            }
             val readyLink = CastHeaderManager.prepareForCast(
                 link, device, CastSessionManager.relay
             )
@@ -1684,7 +1720,13 @@ class ResultViewModel2 : ViewModel() {
 
             ACTION_CLICK_DEFAULT -> {
                 activity?.let { ctx ->
-                    if (ctx.isConnectedToChromecast()) {
+                    if (CastSessionManager.isConnected()) {
+                        // Custom cast session active (DLNA, CloudStream, etc.)
+                        // Redirect play to cast on the connected device
+                        handleEpisodeClickEvent(
+                            click.copy(action = ACTION_CAST_EPISODE)
+                        )
+                    } else if (ctx.isConnectedToChromecast()) {
                         handleEpisodeClickEvent(
                             click.copy(action = ACTION_CHROME_CAST_EPISODE)
                         )

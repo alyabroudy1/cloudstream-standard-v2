@@ -3,6 +3,7 @@ package com.lagradost.cloudstream3.cast
 import com.lagradost.cloudstream3.USER_AGENT
 import com.lagradost.cloudstream3.cast.relay.StreamRelayServer
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 
 /**
  * Decides how to handle HTTP headers when casting to different device types.
@@ -88,7 +89,10 @@ object CastHeaderManager {
         }
 
         // Route through the phone — register with relay server
-        val relayUrl = relay.registerStream(link, buildFullHeaders(link))
+        // For DLNA + HLS: enable direct stream mode (converts M3U8 to continuous MPEG-TS)
+        val directStream = device.type == CastDeviceType.DLNA &&
+                (link.type == ExtractorLinkType.M3U8 || link.type == ExtractorLinkType.DASH)
+        val relayUrl = relay.registerStream(link, buildFullHeaders(link), directStream)
         return CastReadyLink(
             url = relayUrl.url,
             mimeType = relayUrl.mimeType,

@@ -900,4 +900,8 @@
     <string name="casting_prefix_format">Casting to %s</string>
     <string name="scan_for_devices">Scan for devices</string>
     <string name="scanning_for_devices">Scanning for devices…</string>
+    <string name="casting">Casting</string>
+    <string name="casting_notification_text">Streaming video to your TV</string>
+    <string name="cast_controls">Cast Controls</string>
+    <string name="disconnect_from_device">Disconnect</string>
 </resources>

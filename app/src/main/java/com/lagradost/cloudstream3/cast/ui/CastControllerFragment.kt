@@ -10,6 +10,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.cast.CastSessionListener
@@ -95,7 +96,13 @@ class CastControllerFragment : Fragment() {
     // ── Controls Setup ───────────────────────────────────────────────
 
     private fun setupControls() {
-        closeBtn.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        closeBtn.setOnClickListener {
+            try {
+                findNavController().popBackStack()
+            } catch (_: Exception) {
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+        }
 
         playPauseBtn.setOnClickListener {
             val session = CastSessionManager.activeSession.value ?: return@setOnClickListener
@@ -113,7 +120,11 @@ class CastControllerFragment : Fragment() {
                 CastSessionManager.activeSession.value?.stop()
                 CastSessionManager.disconnect()
             }
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            try {
+                findNavController().popBackStack()
+            } catch (_: Exception) {
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
         }
 
         prevBtn.setOnClickListener { navigateEpisode(-1) }
@@ -158,7 +169,11 @@ class CastControllerFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             CastSessionManager.activeSession.collectLatest { session ->
                 if (session == null) {
-                    activity?.onBackPressedDispatcher?.onBackPressed()
+                    try {
+                        findNavController().popBackStack()
+                    } catch (_: Exception) {
+                        activity?.onBackPressedDispatcher?.onBackPressed()
+                    }
                     return@collectLatest
                 }
 
@@ -192,9 +207,19 @@ class CastControllerFragment : Fragment() {
                 }
             }
 
+            override fun onVolumeChanged(volume: Float) {
+                activity?.runOnUiThread {
+                    volumeBar.progress = (volume * 100).toInt()
+                }
+            }
+
             override fun onDisconnected(reason: DisconnectReason) {
                 activity?.runOnUiThread {
-                    activity?.onBackPressedDispatcher?.onBackPressed()
+                    try {
+                        findNavController().popBackStack()
+                    } catch (_: Exception) {
+                        activity?.onBackPressedDispatcher?.onBackPressed()
+                    }
                 }
             }
         }

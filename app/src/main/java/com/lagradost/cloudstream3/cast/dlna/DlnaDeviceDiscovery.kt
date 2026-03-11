@@ -40,9 +40,11 @@ class DlnaDeviceDiscovery : DeviceDiscovery {
         private const val SSDP_ADDRESS = "239.255.255.250"
         private const val SSDP_PORT = 1900
         private const val SEARCH_TARGET = "urn:schemas-upnp-org:device:MediaRenderer:1"
-        private const val DISCOVERY_INTERVAL_MS = 30_000L // Re-scan every 30s
-        private const val DEVICE_TIMEOUT_MS = 90_000L     // Remove after 90s without re-discovery
+        private const val DISCOVERY_INTERVAL_MS = 10_000L // Re-scan every 10s
+        private const val DEVICE_TIMEOUT_MS = 60_000L     // Remove after 60s without re-discovery
         private const val SOCKET_TIMEOUT_MS = 5_000       // Wait 5s for responses
+        private const val INITIAL_BURST_COUNT = 3          // Rapid M-SEARCH bursts on startup
+        private const val INITIAL_BURST_DELAY_MS = 1_500L  // Delay between burst packets
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -63,15 +65,28 @@ class DlnaDeviceDiscovery : DeviceDiscovery {
 
         discoveryJob = scope.launch {
             Log.d(TAG, "Starting DLNA discovery")
+
+            // Rapid initial burst: 3 M-SEARCH packets in quick succession
+            // so TVs are found within seconds, not after the full interval
+            for (burst in 1..INITIAL_BURST_COUNT) {
+                try {
+                    Log.d(TAG, "Initial burst M-SEARCH $burst/$INITIAL_BURST_COUNT")
+                    performSsdpSearch()
+                } catch (e: Exception) {
+                    Log.e(TAG, "SSDP burst $burst error: ${e.message}")
+                }
+                if (burst < INITIAL_BURST_COUNT) delay(INITIAL_BURST_DELAY_MS)
+            }
+
+            // Then settle into the regular interval
             while (isActive) {
+                delay(DISCOVERY_INTERVAL_MS)
                 try {
                     performSsdpSearch()
                 } catch (e: Exception) {
                     Log.e(TAG, "SSDP search error: ${e.message}")
                 }
-                // Clean up stale devices
                 cleanupStaleDevices()
-                delay(DISCOVERY_INTERVAL_MS)
             }
         }
     }
@@ -215,7 +230,9 @@ class DlnaDeviceDiscovery : DeviceDiscovery {
             val modelName = getElementText(deviceElement, "modelName") ?: ""
 
             // Extract AVTransport control URL
-            val controlUrl = findAvTransportControlUrl(document, locationUrl)
+            val controlUrl = findServiceControlUrl(document, locationUrl, "AVTransport")
+            // Extract RenderingControl URL (for volume control)
+            val renderingControlUrl = findServiceControlUrl(document, locationUrl, "RenderingControl")
 
             // Parse host and port from location URL
             val url = URL(locationUrl)
@@ -226,10 +243,11 @@ class DlnaDeviceDiscovery : DeviceDiscovery {
                 DeviceCapability.AUDIO,
                 DeviceCapability.STOP
             )
-            // Most renderers support these
             if (controlUrl != null) {
                 capabilities.add(DeviceCapability.SEEK)
                 capabilities.add(DeviceCapability.PAUSE)
+            }
+            if (renderingControlUrl != null) {
                 capabilities.add(DeviceCapability.VOLUME)
             }
 
@@ -245,7 +263,8 @@ class DlnaDeviceDiscovery : DeviceDiscovery {
                     "manufacturer" to manufacturer,
                     "model" to modelName,
                     "locationUrl" to locationUrl,
-                    "controlUrl" to (controlUrl ?: "")
+                    "controlUrl" to (controlUrl ?: ""),
+                    "renderingControlUrl" to (renderingControlUrl ?: "")
                 )
             )
         } catch (e: Exception) {
@@ -255,17 +274,19 @@ class DlnaDeviceDiscovery : DeviceDiscovery {
     }
 
     /**
-     * Find the AVTransport service control URL in the device description.
+     * Find a UPnP service control URL by service type keyword.
+     * Works for AVTransport, RenderingControl, ConnectionManager, etc.
      */
-    private fun findAvTransportControlUrl(
+    private fun findServiceControlUrl(
         document: org.w3c.dom.Document,
-        locationUrl: String
+        locationUrl: String,
+        serviceKeyword: String
     ): String? {
         val serviceNodes = document.getElementsByTagName("service")
         for (i in 0 until serviceNodes.length) {
             val service = serviceNodes.item(i)
             val serviceType = getElementText(service, "serviceType")
-            if (serviceType?.contains("AVTransport") == true) {
+            if (serviceType?.contains(serviceKeyword) == true) {
                 val controlUrl = getElementText(service, "controlURL") ?: return null
                 // Resolve relative URL against the device's base URL
                 return if (controlUrl.startsWith("http")) {

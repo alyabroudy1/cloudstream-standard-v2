@@ -29,7 +29,7 @@ class CastMiniController @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var scope: CoroutineScope? = null
 
     private val deviceNameView: TextView
     private val mediaTitleView: TextView
@@ -104,30 +104,33 @@ class CastMiniController @JvmOverloads constructor(
         linearLayout.addView(stopButton)
 
         setupControls()
-        observeSession()
 
         // Tap to open expanded cast controller
         setOnClickListener {
-            try {
-                val activity = (context as? android.app.Activity) ?: return@setOnClickListener
-                activity.navigate(R.id.global_to_navigation_cast_controller)
-            } catch (e: Exception) {
-                com.lagradost.api.Log.w("CastMiniController", "Nav failed: ${e.message}")
-            }
+            (context as? android.app.Activity).navigate(
+                R.id.global_to_navigation_cast_controller
+            )
         }
     }
 
     private fun Int.dpToPx(): Int = (this * context.resources.displayMetrics.density).toInt()
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+        observeSession()
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        scope.cancel()
+        scope?.cancel()
+        scope = null
     }
 
     private fun setupControls() {
         playPauseButton.setOnClickListener {
             val session = CastSessionManager.activeSession.value ?: return@setOnClickListener
-            scope.launch(Dispatchers.IO) {
+            scope?.launch(Dispatchers.IO) {
                 when (session.state.value) {
                     CastSessionState.PLAYING -> session.pause()
                     CastSessionState.PAUSED -> session.play()
@@ -138,7 +141,7 @@ class CastMiniController @JvmOverloads constructor(
 
         stopButton.setOnClickListener {
             val session = CastSessionManager.activeSession.value ?: return@setOnClickListener
-            scope.launch(Dispatchers.IO) {
+            scope?.launch(Dispatchers.IO) {
                 session.stop()
                 CastSessionManager.disconnect()
             }
@@ -146,7 +149,7 @@ class CastMiniController @JvmOverloads constructor(
     }
 
     private fun observeSession() {
-        scope.launch {
+        scope?.launch {
             CastSessionManager.activeSession.collectLatest { session ->
                 if (session == null) {
                     visibility = GONE

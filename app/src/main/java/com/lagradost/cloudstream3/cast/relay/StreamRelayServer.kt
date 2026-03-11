@@ -135,29 +135,42 @@ class StreamRelayServer {
      * @param headers Full header map (built by [CastHeaderManager]).
      * @return A [RelayUrl] with a clean URL the cast device can fetch.
      */
-    fun registerStream(link: ExtractorLink, headers: Map<String, String>): RelayUrl {
+    fun registerStream(
+        link: ExtractorLink,
+        headers: Map<String, String>,
+        directStreamMode: Boolean = false
+    ): RelayUrl {
         val streamId = UUID.randomUUID().toString().take(12)
         val relay = RelayStream(
             originalUrl = link.url,
             headers = headers,
             mimeType = link.type.getMimeType(),
-            type = link.type
+            type = link.type,
+            directStreamMode = directStreamMode
         )
         activeStreams[streamId] = relay
 
         val localIp = getLocalIpAddress()
-        val extension = when (link.type) {
-            ExtractorLinkType.DASH -> ".mpd"
-            ExtractorLinkType.M3U8 -> ".m3u8"
+        // For DLNA direct stream mode: serve M3U8 as continuous .ts so old TVs can play it
+        val extension = when {
+            directStreamMode && link.type == ExtractorLinkType.M3U8 -> ".ts"
+            link.type == ExtractorLinkType.DASH -> ".mpd"
+            link.type == ExtractorLinkType.M3U8 -> ".m3u8"
             else -> ".mp4"
         }
 
+        val effectiveMime = if (directStreamMode && link.type == ExtractorLinkType.M3U8) {
+            "video/mp2t"
+        } else {
+            relay.effectiveMimeType
+        }
+
         val url = "http://$localIp:$port/relay/$streamId$extension"
-        Log.d(TAG, "Registered stream $streamId → ${link.url.take(80)}...")
+        Log.d(TAG, "Registered stream $streamId (directStream=$directStreamMode) → ${link.url.take(80)}...")
 
         return RelayUrl(
             url = url,
-            mimeType = relay.effectiveMimeType,
+            mimeType = effectiveMime,
             streamId = streamId
         )
     }
@@ -249,11 +262,18 @@ class StreamRelayServer {
         }
 
         try {
-            when (relay.type) {
-                ExtractorLinkType.VIDEO -> proxyDirect(output, relay, requestHeaders)
-                ExtractorLinkType.DASH -> proxyDashManifest(output, relay)
-                ExtractorLinkType.M3U8 -> proxyHlsPlaylist(output, relay)
-                else -> proxyDirect(output, relay, requestHeaders)
+            when {
+                // DLNA direct stream: convert HLS segments into continuous MPEG-TS
+                relay.directStreamMode && relay.type == ExtractorLinkType.M3U8 ->
+                    proxyHlsAsDirectStream(output, relay)
+                relay.type == ExtractorLinkType.VIDEO ->
+                    proxyDirect(output, relay, requestHeaders)
+                relay.type == ExtractorLinkType.DASH ->
+                    proxyDashManifest(output, relay)
+                relay.type == ExtractorLinkType.M3U8 ->
+                    proxyHlsPlaylist(output, relay)
+                else ->
+                    proxyDirect(output, relay, requestHeaders)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling relay request: ${e.message}")
@@ -431,6 +451,164 @@ class StreamRelayServer {
         sendHttpResponseHeaders(output, 200, responseHeaders)
         output.write(bytes)
         output.flush()
+    }
+
+    /**
+     * HLS-to-Direct-Stream proxy for DLNA devices.
+     *
+     * Fetches the M3U8 playlist, resolves segment URLs, and pipes each
+     * segment's bytes sequentially as a continuous MPEG-TS stream.
+     * The TV sees a single long-running HTTP response with Content-Type: video/mp2t.
+     *
+     * Supports:
+     * - Master playlists (picks highest bandwidth variant)
+     * - Media playlists (iterates all segments)
+     * - Live streams (re-polls playlist for new segments)
+     */
+    private fun proxyHlsAsDirectStream(output: OutputStream, relay: RelayStream) {
+        Log.d(TAG, "HLS direct stream: fetching playlist ${relay.originalUrl.take(80)}")
+
+        val conn = openConnection(relay.originalUrl, relay.headers)
+        conn.connect()
+        val playlist = conn.inputStream.bufferedReader().readText()
+
+        // Resolve the media playlist URL
+        val mediaPlaylistUrl: String
+        val isMaster = playlist.contains("#EXT-X-STREAM-INF") || playlist.contains("#EXT-X-MEDIA")
+
+        if (isMaster) {
+            // Pick the highest bandwidth variant
+            mediaPlaylistUrl = pickBestVariant(playlist, relay.originalUrl)
+                ?: relay.originalUrl // fallback
+            Log.d(TAG, "HLS direct stream: master playlist, picked variant: ${mediaPlaylistUrl.take(80)}")
+        } else {
+            mediaPlaylistUrl = relay.originalUrl
+        }
+
+        // Send response headers — chunked transfer since we don't know total length
+        val responseHeaders = mutableMapOf(
+            "Content-Type" to "video/mp2t",
+            "Access-Control-Allow-Origin" to "*",
+            "Transfer-Encoding" to "chunked",
+            "Connection" to "keep-alive"
+        )
+        sendHttpResponseHeaders(output, 200, responseHeaders)
+
+        // Track already-served segments for live streams
+        val servedSegments = mutableSetOf<String>()
+        var currentPlaylistUrl = mediaPlaylistUrl
+        var consecutiveEmptyPolls = 0
+        val maxEmptyPolls = 10 // Give up after 10 polls with no new segments
+
+        while (running) {
+            try {
+                val mediaConn = openConnection(currentPlaylistUrl, relay.headers)
+                mediaConn.connect()
+                val mediaPlaylist = mediaConn.inputStream.bufferedReader().readText()
+
+                val isLive = !mediaPlaylist.contains("#EXT-X-ENDLIST")
+                val segments = parseHlsSegmentUrls(mediaPlaylist, currentPlaylistUrl)
+
+                var newSegmentsFound = false
+                for (segmentUrl in segments) {
+                    if (segmentUrl in servedSegments) continue
+                    servedSegments.add(segmentUrl)
+                    newSegmentsFound = true
+
+                    try {
+                        val segConn = openConnection(segmentUrl, relay.headers)
+                        segConn.connect()
+                        segConn.inputStream.use { segInput ->
+                            // Write chunked transfer encoding
+                            val buffer = ByteArray(BUFFER_SIZE)
+                            var bytesRead: Int
+                            while (segInput.read(buffer).also { bytesRead = it } != -1) {
+                                // Chunked encoding: size in hex + CRLF + data + CRLF
+                                val sizeHex = Integer.toHexString(bytesRead)
+                                output.write("$sizeHex\r\n".toByteArray())
+                                output.write(buffer, 0, bytesRead)
+                                output.write("\r\n".toByteArray())
+                                output.flush()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "HLS direct stream: segment fetch error: ${e.message}")
+                        // If the TV disconnected (broken pipe), stop
+                        if (e.message?.contains("Broken pipe") == true ||
+                            e.message?.contains("Connection reset") == true) {
+                            return
+                        }
+                    }
+                }
+
+                if (!isLive) {
+                    // VOD: all segments served, send terminating chunk and done
+                    output.write("0\r\n\r\n".toByteArray())
+                    output.flush()
+                    Log.d(TAG, "HLS direct stream: VOD complete, ${servedSegments.size} segments")
+                    return
+                }
+
+                // Live: wait and re-poll for new segments
+                if (newSegmentsFound) {
+                    consecutiveEmptyPolls = 0
+                } else {
+                    consecutiveEmptyPolls++
+                    if (consecutiveEmptyPolls >= maxEmptyPolls) {
+                        Log.d(TAG, "HLS direct stream: no new segments after $maxEmptyPolls polls, ending")
+                        output.write("0\r\n\r\n".toByteArray())
+                        output.flush()
+                        return
+                    }
+                }
+
+                // Parse target duration for poll interval (default 5s)
+                val targetDuration = Regex("#EXT-X-TARGETDURATION:(\\d+)")
+                    .find(mediaPlaylist)?.groupValues?.get(1)?.toLongOrNull() ?: 5
+                Thread.sleep(targetDuration * 1000 / 2) // Poll at half the target duration
+
+            } catch (e: Exception) {
+                Log.e(TAG, "HLS direct stream: playlist poll error: ${e.message}")
+                if (e.message?.contains("Broken pipe") == true ||
+                    e.message?.contains("Connection reset") == true) {
+                    return
+                }
+                Thread.sleep(2000) // Back off on error
+            }
+        }
+    }
+
+    /**
+     * Pick the highest bandwidth variant from an HLS master playlist.
+     */
+    private fun pickBestVariant(masterPlaylist: String, baseUrl: String): String? {
+        var bestBandwidth = -1L
+        var bestUrl: String? = null
+        val lines = masterPlaylist.lines()
+
+        for (i in lines.indices) {
+            val line = lines[i]
+            if (line.startsWith("#EXT-X-STREAM-INF")) {
+                val bw = Regex("BANDWIDTH=(\\d+)").find(line)?.groupValues?.get(1)?.toLongOrNull() ?: 0
+                val urlLine = lines.getOrNull(i + 1)?.trim()
+                if (urlLine != null && !urlLine.startsWith("#") && urlLine.isNotBlank()) {
+                    if (bw > bestBandwidth) {
+                        bestBandwidth = bw
+                        bestUrl = resolveUrl(baseUrl, urlLine)
+                    }
+                }
+            }
+        }
+        return bestUrl
+    }
+
+    /**
+     * Parse segment URLs from an HLS media playlist.
+     */
+    private fun parseHlsSegmentUrls(playlist: String, baseUrl: String): List<String> {
+        return playlist.lines()
+            .filter { it.isNotBlank() && !it.startsWith("#") }
+            .map { resolveUrl(baseUrl, it.trim()) }
     }
 
     /**
@@ -669,7 +847,9 @@ data class RelayStream(
     val originalUrl: String,
     val headers: Map<String, String>,
     val mimeType: String,
-    val type: ExtractorLinkType
+    val type: ExtractorLinkType,
+    /** When true, HLS is converted to a continuous MPEG-TS stream for DLNA. */
+    val directStreamMode: Boolean = false
 ) {
     /**
      * The MIME type the device will see.

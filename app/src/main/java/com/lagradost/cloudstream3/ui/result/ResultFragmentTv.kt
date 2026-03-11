@@ -16,6 +16,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -62,6 +63,7 @@ import com.lagradost.cloudstream3.utils.UIHelper.navigate
 import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.setTextHtml
+import kotlinx.coroutines.launch
 
 class ResultFragmentTv : Fragment() {
     private lateinit var viewModel: ResultViewModel2
@@ -363,6 +365,38 @@ class ResultFragmentTv : Fragment() {
             }
 
             resultCastActionButton.setOnClickListener {
+                // Green icon = connected → show cast controls / disconnect dialog
+                if (com.lagradost.cloudstream3.cast.CastSessionManager.isConnected()) {
+                    val deviceName = com.lagradost.cloudstream3.cast.CastSessionManager.activeSession.value?.device?.name ?: "TV"
+                    activity?.showBottomDialog(
+                        listOf(
+                            getString(R.string.cast_controls),
+                            getString(R.string.disconnect_from_device)
+                        ),
+                        -1,
+                        getString(R.string.casting_prefix_format, deviceName),
+                        false,
+                        {}
+                    ) { selectedIndex ->
+                        when (selectedIndex) {
+                            0 -> {
+                                // Open full cast controller
+                                activity.navigate(
+                                    R.id.global_to_navigation_cast_controller
+                                )
+                            }
+                            1 -> {
+                                // Disconnect
+                                viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                    com.lagradost.cloudstream3.cast.CastSessionManager.disconnect()
+                                }
+                            }
+                        }
+                    }
+                    return@setOnClickListener
+                }
+
+                // Gray icon = not connected → show device picker
                 val movie = (viewModel.movie.value as? Resource.Success)?.value?.second
                 if (movie != null) {
                     viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, movie))
@@ -378,6 +412,25 @@ class ResultFragmentTv : Fragment() {
                     viewModel.handleAction(EpisodeClickEvent(ACTION_CAST_EPISODE, firstEp))
                 } else {
                     CommonActivity.showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
+                }
+            }
+
+            // Observe cast session state — green icon when connected, gray when not
+            viewLifecycleOwner.lifecycleScope.launch {
+                com.lagradost.cloudstream3.cast.CastSessionManager.activeSession.collect { session ->
+                    if (session != null &&
+                        session.state.value != com.lagradost.cloudstream3.cast.CastSessionState.DISCONNECTED &&
+                        session.state.value != com.lagradost.cloudstream3.cast.CastSessionState.ERROR) {
+                        resultCastActionButton.iconTint = android.content.res.ColorStateList.valueOf(
+                            android.graphics.Color.parseColor("#4CAF50")  // Material Green
+                        )
+                        resultCastActionText.text = getString(R.string.casting_prefix_format, session.device.name)
+                    } else {
+                        resultCastActionButton.iconTint = android.content.res.ColorStateList.valueOf(
+                            context?.colorFromAttribute(R.attr.white) ?: android.graphics.Color.WHITE
+                        )
+                        resultCastActionText.text = getString(R.string.cast_to_device)
+                    }
                 }
             }
 
