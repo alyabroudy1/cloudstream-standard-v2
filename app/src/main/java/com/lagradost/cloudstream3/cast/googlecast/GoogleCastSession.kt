@@ -208,13 +208,19 @@ class GoogleCastSession(
         }
 
         try {
+            val mimeType = when {
+                payload.mimeType.contains("m3u8", ignoreCase = true) || payload.url.contains(".m3u8", ignoreCase = true) -> androidx.media3.common.MimeTypes.APPLICATION_M3U8
+                payload.mimeType.contains("mpd", ignoreCase = true) || payload.url.contains(".mpd", ignoreCase = true) -> androidx.media3.common.MimeTypes.APPLICATION_MPD
+                else -> androidx.media3.common.MimeTypes.VIDEO_MP4
+            }
+
             val mediaMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE).apply {
                 putString(MediaMetadata.KEY_TITLE, payload.title ?: "CloudStream")
             }
 
             val mediaInfo = MediaInfo.Builder(payload.url)
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-                .setContentType(payload.mimeType)
+                .setContentType(mimeType)
                 .setMetadata(mediaMetadata)
                 .build()
 
@@ -223,7 +229,7 @@ class GoogleCastSession(
                 .setAutoplay(true)
                 .apply {
                     if (payload.startPositionMs != null && payload.startPositionMs > 0) {
-                        setCurrentTime(payload.startPositionMs / 1000L)
+                        setCurrentTime(payload.startPositionMs) // setCurrentTime takes milliseconds in MediaLoadRequestData.Builder!
                     }
                 }
                 .build()
