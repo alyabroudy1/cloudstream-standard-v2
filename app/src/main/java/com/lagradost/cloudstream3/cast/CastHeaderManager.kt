@@ -89,10 +89,10 @@ object CastHeaderManager {
         }
 
         // Route through the phone — register with relay server
-        // For DLNA + HLS: enable direct stream mode (converts M3U8 to continuous MPEG-TS)
-        val directStream = device.type == CastDeviceType.DLNA &&
-                (link.type == ExtractorLinkType.M3U8 || link.type == ExtractorLinkType.DASH)
-        val relayUrl = relay.registerStream(link, buildFullHeaders(link), directStream)
+        // The relay rewrites HLS/DASH manifests to route segments through the relay,
+        // preserving the playlist structure so the device can seek normally.
+        // (Old directStreamMode converted HLS to continuous MPEG-TS, breaking seeking.)
+        val relayUrl = relay.registerStream(link, buildFullHeaders(link))
         return CastReadyLink(
             url = relayUrl.url,
             mimeType = relayUrl.mimeType,

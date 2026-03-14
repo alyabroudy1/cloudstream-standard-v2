@@ -159,8 +159,10 @@ object CastSessionManager {
 
         Log.d(TAG, "Connecting to ${device.name} (${device.type})")
 
-        // Start relay if needed
-        if (device.needsRelay) {
+        // Start relay server if this device type may use it.
+        // DLNA always needs relay; Google Cast uses smart relay (per-link decision
+        // by CastHeaderManager), so we start the server proactively.
+        if (device.needsRelay || device.type == CastDeviceType.GOOGLE_CAST) {
             relay.start(appContext)
             // Keep relay alive when app is backgrounded
             appContext?.let { CastRelayService.start(it) }

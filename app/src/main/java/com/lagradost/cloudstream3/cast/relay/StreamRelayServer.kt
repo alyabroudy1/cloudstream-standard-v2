@@ -137,40 +137,30 @@ class StreamRelayServer {
      */
     fun registerStream(
         link: ExtractorLink,
-        headers: Map<String, String>,
-        directStreamMode: Boolean = false
+        headers: Map<String, String>
     ): RelayUrl {
         val streamId = UUID.randomUUID().toString().take(12)
         val relay = RelayStream(
             originalUrl = link.url,
             headers = headers,
             mimeType = link.type.getMimeType(),
-            type = link.type,
-            directStreamMode = directStreamMode
+            type = link.type
         )
         activeStreams[streamId] = relay
 
         val localIp = getLocalIpAddress()
-        // For DLNA direct stream mode: serve M3U8 as continuous .ts so old TVs can play it
-        val extension = when {
-            directStreamMode && link.type == ExtractorLinkType.M3U8 -> ".ts"
-            link.type == ExtractorLinkType.DASH -> ".mpd"
-            link.type == ExtractorLinkType.M3U8 -> ".m3u8"
+        val extension = when (link.type) {
+            ExtractorLinkType.DASH -> ".mpd"
+            ExtractorLinkType.M3U8 -> ".m3u8"
             else -> ".mp4"
         }
 
-        val effectiveMime = if (directStreamMode && link.type == ExtractorLinkType.M3U8) {
-            "video/mp2t"
-        } else {
-            relay.effectiveMimeType
-        }
-
         val url = "http://$localIp:$port/relay/$streamId$extension"
-        Log.d(TAG, "Registered stream $streamId (directStream=$directStreamMode) → ${link.url.take(80)}...")
+        Log.d(TAG, "Registered stream $streamId → ${link.url.take(80)}...")
 
         return RelayUrl(
             url = url,
-            mimeType = effectiveMime,
+            mimeType = relay.effectiveMimeType,
             streamId = streamId
         )
     }
@@ -200,7 +190,9 @@ class StreamRelayServer {
             val parts = requestLine.split(" ")
             if (parts.size < 2) return
 
+            val method = parts[0]
             val path = parts[1]
+            Log.d(TAG, "INCOMING REQUEST: $method $path")
 
             // Read headers
             val requestHeaders = mutableMapOf<String, String>()
@@ -212,7 +204,20 @@ class StreamRelayServer {
                     val key = headerLine.substring(0, colonIdx).trim()
                     val value = headerLine.substring(colonIdx + 1).trim()
                     requestHeaders[key] = value
+                    Log.d(TAG, "HEADER: $key: $value")
                 }
+            }
+
+            // Handle CORS preflight
+            if (method.equals("OPTIONS", ignoreCase = true)) {
+                val corsHeaders = mapOf(
+                    "Access-Control-Allow-Origin" to "*",
+                    "Access-Control-Allow-Methods" to "GET, HEAD, OPTIONS",
+                    "Access-Control-Allow-Headers" to "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Range",
+                    "Access-Control-Max-Age" to "86400"
+                )
+                sendHttpResponse(output, 204, "", corsHeaders, null)
+                return
             }
 
             // Route
@@ -263,9 +268,6 @@ class StreamRelayServer {
 
         try {
             when {
-                // DLNA direct stream: convert HLS segments into continuous MPEG-TS
-                relay.directStreamMode && relay.type == ExtractorLinkType.M3U8 ->
-                    proxyHlsAsDirectStream(output, relay)
                 relay.type == ExtractorLinkType.VIDEO ->
                     proxyDirect(output, relay, requestHeaders)
                 relay.type == ExtractorLinkType.DASH ->
@@ -474,7 +476,9 @@ class StreamRelayServer {
 
         // Resolve the media playlist URL
         val mediaPlaylistUrl: String
-        val isMaster = playlist.contains("#EXT-X-STREAM-INF") || playlist.contains("#EXT-X-MEDIA")
+        // Only #EXT-X-STREAM-INF definitively indicates a master playlist.
+        // #EXT-X-MEDIA can appear in both master and media playlists (alternate renditions).
+        val isMaster = playlist.contains("#EXT-X-STREAM-INF")
 
         if (isMaster) {
             // Pick the highest bandwidth variant
@@ -677,8 +681,10 @@ class StreamRelayServer {
     ) {
         val bodyBytes = body.toByteArray()
         val allHeaders = headers.toMutableMap()
-        allHeaders["Content-Length"] = bodyBytes.size.toString()
-        allHeaders["Content-Type"] = "text/plain"
+        if (body.isNotEmpty()) {
+            allHeaders["Content-Length"] = bodyBytes.size.toString()
+            allHeaders["Content-Type"] = "text/plain"
+        }
         sendHttpResponseHeaders(output, statusCode, allHeaders)
         output.write(bodyBytes)
         output.flush()
@@ -736,7 +742,9 @@ class StreamRelayServer {
      */
     private fun rewriteHlsPlaylist(playlist: String, relay: RelayStream): String {
         val streamId = activeStreams.entries.find { it.value === relay }?.key ?: return playlist
-        val isMaster = playlist.contains("#EXT-X-STREAM-INF") || playlist.contains("#EXT-X-MEDIA")
+        // Only #EXT-X-STREAM-INF definitively indicates a master playlist.
+        // #EXT-X-MEDIA can appear in both master and media playlists (alternate renditions).
+        val isMaster = playlist.contains("#EXT-X-STREAM-INF")
 
         return if (isMaster) {
             rewriteHlsMasterPlaylist(playlist, relay, streamId)
@@ -847,9 +855,7 @@ data class RelayStream(
     val originalUrl: String,
     val headers: Map<String, String>,
     val mimeType: String,
-    val type: ExtractorLinkType,
-    /** When true, HLS is converted to a continuous MPEG-TS stream for DLNA. */
-    val directStreamMode: Boolean = false
+    val type: ExtractorLinkType
 ) {
     /**
      * The MIME type the device will see.

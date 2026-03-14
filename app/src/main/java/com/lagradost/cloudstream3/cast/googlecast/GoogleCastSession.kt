@@ -19,9 +19,11 @@ import com.lagradost.cloudstream3.cast.CastSessionListener
 import com.lagradost.cloudstream3.cast.CastSessionState
 import com.lagradost.cloudstream3.cast.DisconnectReason
 import com.lagradost.cloudstream3.cast.relay.StreamRelayServer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -234,6 +236,11 @@ class GoogleCastSession(
                 }
                 .build()
 
+            Log.d(TAG, "Submitting to Chromecast:")
+            Log.d(TAG, " - URL: ${mediaInfo.contentId}")
+            Log.d(TAG, " - MimeType: ${mediaInfo.contentType}")
+            Log.d(TAG, " - StreamType: ${mediaInfo.streamType}")
+
             client.load(requestData)
             updateState(CastSessionState.PLAYING)
             Log.d(TAG, "Media loaded on ${device.name}: ${payload.url.take(80)}...")
@@ -245,29 +252,40 @@ class GoogleCastSession(
     }
 
     // ── Transport Controls ───────────────────────────────────────────
+    // RemoteMediaClient calls MUST be on the main thread.
 
     override suspend fun play() {
-        remoteMediaClient?.play()
+        withContext(Dispatchers.Main) {
+            remoteMediaClient?.play()
+        }
         updateState(CastSessionState.PLAYING)
     }
 
     override suspend fun pause() {
-        remoteMediaClient?.pause()
+        withContext(Dispatchers.Main) {
+            remoteMediaClient?.pause()
+        }
         updateState(CastSessionState.PAUSED)
     }
 
     override suspend fun stop() {
-        remoteMediaClient?.stop()
+        withContext(Dispatchers.Main) {
+            remoteMediaClient?.stop()
+        }
         updateState(CastSessionState.IDLE)
     }
 
     override suspend fun seek(positionMs: Long) {
-        remoteMediaClient?.seek(positionMs)
+        withContext(Dispatchers.Main) {
+            remoteMediaClient?.seek(positionMs)
+        }
     }
 
     override suspend fun setVolume(volume: Float) {
         try {
-            gmsCastSession?.volume = volume.toDouble()
+            withContext(Dispatchers.Main) {
+                gmsCastSession?.volume = volume.toDouble()
+            }
         } catch (e: Exception) {
             Log.w(TAG, "Failed to set volume: ${e.message}")
         }

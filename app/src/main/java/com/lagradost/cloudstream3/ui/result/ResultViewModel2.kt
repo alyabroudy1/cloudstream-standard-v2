@@ -1661,14 +1661,6 @@ class ResultViewModel2 : ViewModel() {
             ACTION_SHOW_OPTIONS -> {
                 val options = mutableListOf<Pair<UiText, Int>>()
 
-                if (activity?.isConnectedToChromecast() == true) {
-                    options.addAll(
-                        listOf(
-                            txt(R.string.episode_action_chromecast_episode) to ACTION_CHROME_CAST_EPISODE,
-                            txt(R.string.episode_action_chromecast_mirror) to ACTION_CHROME_CAST_MIRROR,
-                        )
-                    )
-                }
 
                 options.add(txt(R.string.episode_action_play_in_app) to ACTION_PLAY_EPISODE_IN_PLAYER)
                 options.add(txt(R.string.cast_to_device) to ACTION_CAST_EPISODE)
@@ -1721,14 +1713,10 @@ class ResultViewModel2 : ViewModel() {
             ACTION_CLICK_DEFAULT -> {
                 activity?.let { ctx ->
                     if (CastSessionManager.isConnected()) {
-                        // Custom cast session active (DLNA, CloudStream, etc.)
+                        // Cast session active (DLNA, Google Cast, CloudStream)
                         // Redirect play to cast on the connected device
                         handleEpisodeClickEvent(
                             click.copy(action = ACTION_CAST_EPISODE)
-                        )
-                    } else if (ctx.isConnectedToChromecast()) {
-                        handleEpisodeClickEvent(
-                            click.copy(action = ACTION_CHROME_CAST_EPISODE)
                         )
                     } else {
                         val action = getPlayerAction(ctx)
@@ -1839,18 +1827,13 @@ class ResultViewModel2 : ViewModel() {
             }
 
             ACTION_CHROME_CAST_MIRROR -> {
-                acquireSingleLink(
-                    click.data,
-                    LOADTYPE_CHROMECAST,
-                    txt(R.string.episode_action_chromecast_mirror),
-                    isCasting = true
-                ) { (result, index) ->
-                    startChromecast(activity, click.data, result.links, result.subs, index)
-                }
+                // Redirected to unified cast system (with smart relay)
+                handleEpisodeClickEvent(click.copy(action = ACTION_CAST_MIRROR))
             }
 
             ACTION_CHROME_CAST_EPISODE -> {
-                startChromecast(activity, click.data)
+                // Redirected to unified cast system (with smart relay)
+                handleEpisodeClickEvent(click.copy(action = ACTION_CAST_EPISODE))
             }
 
             ACTION_CAST_EPISODE -> {
