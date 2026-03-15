@@ -441,39 +441,65 @@ class ResultViewModel2 : ViewModel() {
             return
         }
 
+        val ctx = context ?: return
+
+        // Start discovery immediately
+        CastSessionManager.startAllDiscovery(ctx)
+
+        // Show device picker using the standard popup pattern
+        showDevicePickerPopup(video, links, subs, startIndex)
+    }
+
+    /**
+     * Shows the device picker popup. When "Scan" is selected, starts discovery
+     * and re-shows the popup after a delay with refreshed devices.
+     */
+    private fun showDevicePickerPopup(
+        video: ResultEpisode,
+        links: List<ExtractorLink>? = null,
+        subs: List<SubtitleData>? = null,
+        startIndex: Int? = null
+    ) {
         val devices = CastSessionManager.allDevices.value
-        val options = devices.map<CastDevice, UiText> {
-            val suffix = if (activeSession?.device?.id == it.id) " ✓" else ""
-            UiText.DynamicString("${it.name} (${it.type})$suffix")
-        }.toMutableList<UiText>()
+        val activeSession = CastSessionManager.activeSession.value
+
+        val options = mutableListOf<UiText>()
+        devices.forEach { d ->
+            val suffix = if (activeSession?.device?.id == d.id) " ✓" else ""
+            options.add(UiText.DynamicString("${d.name} (${d.type})$suffix"))
+        }
         options.add(txt(R.string.scan_for_devices))
 
         postPopup(txt(R.string.cast_to_device), options) { index ->
             if (index == null) return@postPopup
-            if (index == devices.size) {
-                // Scan option — re-trigger discovery
+
+            // The last index is always "Scan for devices"
+            val scanIndex = options.size - 1
+
+            if (index == scanIndex) {
+                // Scan option — re-trigger discovery and re-show popup after delay
                 val ctx = context ?: return@postPopup
                 CastSessionManager.startAllDiscovery(ctx)
                 showToast(R.string.scanning_for_devices, Toast.LENGTH_SHORT)
+                viewModelScope.launch(Dispatchers.Main) {
+                    kotlinx.coroutines.delay(2000)
+                    showDevicePickerPopup(video, links, subs, startIndex)
+                }
                 return@postPopup
             }
 
             val device = devices.getOrNull(index) ?: return@postPopup
 
             if (links != null && subs != null && startIndex != null) {
-                // Links already available — cast directly
                 viewModelScope.launchSafe {
                     performCast(device, video, links, subs, startIndex)
                 }
             } else {
-                // Need to load links first
                 loadLinks(video, isVisible = true, isCasting = true) { result ->
                     if (result.links.isEmpty()) {
                         showToast(R.string.no_links_found_toast, Toast.LENGTH_SHORT)
                         return@loadLinks
                     }
-                    // Launch performCast in viewModelScope so it survives
-                    // currentLoadLinkJob cancellation (which would kill DLNA connect)
                     viewModelScope.launchSafe {
                         performCast(device, video, result.links, result.subs, 0)
                     }
