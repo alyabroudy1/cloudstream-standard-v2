@@ -12,6 +12,9 @@ import com.lagradost.api.Log
 import com.youtube.innertube.InnerTubeClient
 import com.youtube.innertube.InnerTubeParser
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.jsoup.Jsoup
+import com.lagradost.cloudstream3.utils.AppUtils.parseJson
+import com.lagradost.cloudstream3.utils.AppUtils.toJson
 
 class Watanflix : BaseProvider() {
 
@@ -19,16 +22,23 @@ class Watanflix : BaseProvider() {
     override val providerName get() = "Watanflix"
     override val githubConfigUrl get() = "https://raw.githubusercontent.com/alyabroudy1/omarC/main/configs/watanflix.json"
 
+    override var mainUrl = "https://$baseDomain"
+
+    override val supportedTypes = setOf(
+        TvType.Movie,
+        TvType.TvSeries
+    )
+
     companion object {
         private const val TAG = "Watanflix"
     }
 
     override val mainPage = mainPageOf(
-        "/en/category/مسلسلات" to "مسلسلات",
-        "/en/category/الأفلام" to "أفلام",
-        "/en/category/مسرحيات" to "مسرحيات",
-        "/en/category/برامج" to "برامج",
-        "/en/category/أطفال" to "أطفال"
+        "/ar/category/مسلسلات" to "مسلسلات",
+        "/ar/category/الأفلام" to "الأفلام",
+        "/ar/category/مسرحيات" to "مسرحيات",
+        "/ar/category/برامج" to "برامج",
+        "/ar/category/أطفال" to "أطفال"
     )
 
     override fun getParser(): NewBaseParser {
@@ -47,23 +57,35 @@ class Watanflix : BaseProvider() {
     override suspend fun search(query: String): List<SearchResponse> {
         val url = "$mainUrl/ar/search?q=$query"
         val response = app.get(url).parsedSafe<WatanflixSearchResponse>()
-        return response?.data?.mapNotNull { item ->
+        val items = response?.data ?: return emptyList()
+
+        return items.mapNotNull { item ->
             val title = item.title?.trim() ?: return@mapNotNull null
             val itemUrl = item.url ?: return@mapNotNull null
 
             val isSeries = itemUrl.contains("series") || title.contains("مسلسل")
             val tvType = if (isSeries) TvType.TvSeries else TvType.Movie
 
+            // Fetch the individual page to extract the poster
+            var fetchedPoster: String? = null
+            try {
+                val html = app.get(itemUrl).text
+                val doc = Jsoup.parse(html)
+                fetchedPoster = doc.selectFirst("meta[property='og:image']")?.attr("content")
+            } catch (e: Exception) {
+                Log.w(TAG, "search: Failed to fetch poster for $itemUrl - ${e.message}")
+            }
+
             if (tvType == TvType.TvSeries) {
                 newTvSeriesSearchResponse(title, itemUrl, TvType.TvSeries) {
-                    this.posterUrl = null
+                    this.posterUrl = fetchedPoster
                 }
             } else {
                 newMovieSearchResponse(title, itemUrl, TvType.Movie) {
-                    this.posterUrl = null
+                    this.posterUrl = fetchedPoster
                 }
             }
-        } ?: emptyList()
+        }.filterNotNull()
     }
 
     override suspend fun loadLinks(
@@ -82,28 +104,29 @@ class Watanflix : BaseProvider() {
         }
         Log.d(TAG, "loadLinks: videoId=$videoId")
 
-        // Call InnerTube /player API with ANDROID client
+        // ── Step 1: Fetch player data (IOS → ANDROID_TESTSUITE fallback) ──
         val playerJson = InnerTubeClient.getPlayer(videoId)
         if (playerJson == null) {
-            Log.e(TAG, "loadLinks: Player API returned null, falling back to WebView")
+            Log.e(TAG, "loadLinks: Player API returned null — falling back to WebView")
             launchWebViewPlayer(data)
             return true
         }
 
-        // Check playability
+        // ── Step 2: Check playability ──
         val status = playerJson.path("playabilityStatus").path("status").textValue()
         if (status != "OK") {
             val reason = playerJson.path("playabilityStatus").path("reason").textValue() ?: "Unknown"
-            Log.w(TAG, "loadLinks: Not playable: $status — $reason, falling back to WebView")
+            Log.w(TAG, "loadLinks: Not playable: $status — $reason — falling back to WebView")
             launchWebViewPlayer(data)
             return true
         }
 
-        // Parse streaming data
+        // ── Step 3: Parse streaming data ──
         val result = InnerTubeParser.parseStreamingData(playerJson)
+        var linksEmitted = 0
 
-        // 1. HLS manifest for live streams
-        if (result.hlsManifestUrl != null) {
+        // ── Tier 1: HLS manifest for live streams ──
+        if (result.hlsManifestUrl != null && result.isLive) {
             callback(
                 newExtractorLink(
                     source = "Watanflix",
@@ -113,16 +136,17 @@ class Watanflix : BaseProvider() {
                 ) {
                     this.referer = "https://www.youtube.com/"
                     this.quality = Qualities.Unknown.value
-                    this.headers = mapOf(
-                        "User-Agent" to "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip"
-                    )
+                    this.headers = buildPlayerHeaders()
                 }
             )
-            Log.d(TAG, "loadLinks: Added HLS manifest for live stream")
+            linksEmitted++
+            Log.d(TAG, "loadLinks: [Tier 1] HLS manifest emitted — done")
             return true
+        } else if (result.hlsManifestUrl != null) {
+            Log.d(TAG, "loadLinks: [Tier 1] HLS manifest skipped — video is not live")
         }
 
-        // 2. DASH manifest from adaptive formats — high quality with ABR
+        // ── Tier 2: DASH manifest from adaptive formats ──
         if (result.adaptiveFormats.isNotEmpty()) {
             val dashUri = com.youtube.innertube.DashManifestGenerator.generateUrl(result.adaptiveFormats)
             if (dashUri != null) {
@@ -135,42 +159,53 @@ class Watanflix : BaseProvider() {
                     ) {
                         this.referer = "https://www.youtube.com/"
                         this.quality = Qualities.Unknown.value
-                        this.headers = mapOf(
-                            "User-Agent" to "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip"
-                        )
+                        this.headers = buildPlayerHeaders()
                     }
                 )
-                Log.d(TAG, "loadLinks: Added DASH manifest with ${result.adaptiveFormats.size} adaptive streams")
+                linksEmitted++
+                Log.d(TAG, "loadLinks: [Tier 2] DASH manifest emitted (${result.adaptiveFormats.size} adaptive streams)")
+            } else {
+                Log.w(TAG, "loadLinks: [Tier 2] DASH skipped — generator returned null")
             }
+        } else {
+            Log.w(TAG, "loadLinks: [Tier 2] DASH skipped — no adaptive formats parsed")
         }
 
-        // 3. Muxed format streams as fallback (itag 18=360p, 22=720p)
+        // ── Tier 3: Muxed formats (Progressive MP4 fallback) ──
         for (stream in result.muxedFormats) {
+            val qualityValue = mapQuality(stream.qualityLabel)
+            val name = "YouTube ${stream.qualityLabel ?: "MP4"}"
+            
             callback(
                 newExtractorLink(
-                    source = "Watanflix",
-                    name = "Watanflix ${stream.qualityLabel ?: "Auto"}",
+                    source = "YouTube",
+                    name = name,
                     url = stream.url,
                     type = ExtractorLinkType.VIDEO
                 ) {
                     this.referer = "https://www.youtube.com/"
-                    this.quality = mapQuality(stream.qualityLabel)
-                    this.headers = mapOf(
-                        "User-Agent" to "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip"
-                    )
+                    this.quality = qualityValue
+                    this.headers = buildPlayerHeaders()
                 }
             )
-            Log.d(TAG, "loadLinks: Added muxed itag=${stream.itag} quality=${stream.qualityLabel}")
+            linksEmitted++
+            Log.d(TAG, "loadLinks: [Tier 3] Muxed fallback emitted: ${stream.qualityLabel}")
         }
 
-        if (result.adaptiveFormats.isEmpty() && result.muxedFormats.isEmpty()) {
-            Log.w(TAG, "loadLinks: No formats found, falling back to WebView")
+        // ── Tier 4: WebView last resort ──
+        if (linksEmitted == 0) {
+            Log.w(TAG, "loadLinks: No links emitted from any tier — falling back to WebView")
             launchWebViewPlayer(data)
         }
 
-        Log.d(TAG, "loadLinks: Done — ${result.adaptiveFormats.size} adaptive, ${result.muxedFormats.size} muxed")
+        Log.d(TAG, "loadLinks: Done — $linksEmitted links emitted (${result.adaptiveFormats.size} adaptive, ${result.muxedFormats.size} muxed)")
         return true
     }
+
+    /** Build consistent headers for stream requests. Matches the IOS client used by InnerTubeClient. */
+    private fun buildPlayerHeaders(): Map<String, String> = mapOf(
+        "User-Agent" to "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)"
+    )
 
     /**
      * Extract YouTube video ID from various URL formats.
@@ -202,7 +237,7 @@ class Watanflix : BaseProvider() {
         CommonActivity.activity?.let { activity ->
             if (activity is android.app.Activity) {
                 activity.runOnUiThread {
-                    val dialog = com.cloudstream.shared.ui.WebViewPlayerDialog(activity, url)
+                    val dialog = com.cloudstream.shared.ui.player.YouTubePlayer(activity, url)
                     dialog.show()
                 }
             }

@@ -1,0 +1,647 @@
+Calculating task graph as no cached configuration is available for tasks: app:tasks --all
+
+> Configure project :app
+No prerelease signing config!
+
+> Configure project :library
+Compiling library with release flag
+
+> Task :app:tasks
+
+------------------------------------------------------------
+Tasks runnable from project ':app'
+------------------------------------------------------------
+
+Android tasks
+-------------
+androidDependencies - Displays the Android dependencies of the project.
+signingReport - Displays the signing info for the base and test modules
+sourceSets - Prints out all the source sets defined in this project.
+
+Build tasks
+-----------
+assemble - Assemble main outputs for all the variants.
+assembleAndroidTest - Assembles all the Test applications.
+assembleDebug - Assembles main outputs for all Debug variants.
+assemblePrerelease - Assembles main outputs for all Prerelease variants.
+assembleRelease - Assembles main outputs for all Release variants.
+assembleStable - Assembles main outputs for all Stable variants.
+assembleUnitTest - Assembles all the unit test applications.
+build - Assembles and tests this project.
+buildDependents - Assembles and tests this project and all projects that depend on it.
+buildKotlinToolingMetadata - Build metadata json file containing information about the used Kotlin tooling
+buildNeeded - Assembles and tests this project and all projects it depends on.
+bundle - Assemble bundles for all the variants.
+bundleDebug - Assembles bundles for all Debug variants.
+bundlePrerelease - Assembles bundles for all Prerelease variants.
+bundleRelease - Assembles bundles for all Release variants.
+bundleStable - Assembles bundles for all Stable variants.
+clean - Deletes the build directory.
+compilePrereleaseDebugAndroidTestSources
+compilePrereleaseDebugSources
+compilePrereleaseDebugUnitTestSources
+compilePrereleaseReleaseSources
+compilePrereleaseReleaseUnitTestSources
+compileStableDebugAndroidTestSources
+compileStableDebugSources
+compileStableDebugUnitTestSources
+compileStableReleaseSources
+compileStableReleaseUnitTestSources
+
+Dokka tasks
+-----------
+dokkaGenerate - Generates Dokka publications for all formats
+dokkaGenerateModuleHtml - Executes the Dokka Generator, generating a html module
+dokkaGeneratePublicationHtml - Executes the Dokka Generator, generating the html publication
+
+Help tasks
+----------
+artifactTransforms - Displays the Artifact Transforms that can be executed in project ':app'.
+buildEnvironment - Displays all buildscript dependencies declared in project ':app'.
+dependencies - Displays all dependencies declared in project ':app'.
+dependencyInsight - Displays the insight into a specific dependency in project ':app'.
+help - Displays a help message.
+javaToolchains - Displays the detected java toolchains.
+kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+outgoingVariants - Displays the outgoing variants of project ':app'.
+projects - Displays the sub-projects of project ':app'.
+properties - Displays the properties of project ':app'.
+resolvableConfigurations - Displays the configurations that can be resolved in project ':app'.
+tasks - Displays the tasks runnable from project ':app'.
+
+Install tasks
+-------------
+installPrereleaseDebug - Installs the Debug build for flavor Prerelease.
+installPrereleaseDebugAndroidTest - Installs the android (on device) tests for the PrereleaseDebug build.
+installPrereleaseRelease - Installs the Release build for flavor Prerelease.
+installStableDebug - Installs the Debug build for flavor Stable.
+installStableDebugAndroidTest - Installs the android (on device) tests for the StableDebug build.
+installStableRelease - Installs the Release build for flavor Stable.
+uninstallAll - Uninstall all applications.
+uninstallPrereleaseDebug - Uninstalls the Debug build for flavor Prerelease.
+uninstallPrereleaseDebugAndroidTest - Uninstalls the android (on device) tests for the PrereleaseDebug build.
+uninstallPrereleaseRelease - Uninstalls the Release build for flavor Prerelease.
+uninstallStableDebug - Uninstalls the Debug build for flavor Stable.
+uninstallStableDebugAndroidTest - Uninstalls the android (on device) tests for the StableDebug build.
+uninstallStableRelease - Uninstalls the Release build for flavor Stable.
+
+Signing tasks
+-------------
+generatePgpKeys - Generates a new PGP keypair.
+
+Usage: 
+gradlew generatePgpKeys --name "Jane Doe <janedoe@example.com>" --password YOUR_PASSWORD
+uploadPublicPgpKey - Uploads the public PGP key to a keyserver
+
+Validation tasks
+----------------
+checkSigningConfiguration - Checks that a signing configuration is set up correctly.
+
+Verification tasks
+------------------
+check - Runs all checks.
+checkJetifier - Checks whether Jetifier is needed for the current project
+checkKotlinGradlePluginConfigurationErrors - Checks that Kotlin Gradle Plugin hasn't reported project configuration errors, failing otherwise. This task always runs before compileKotlin* or similar tasks.
+connectedAndroidTest - Installs and runs instrumentation tests for all flavors on connected devices.
+connectedCheck - Runs all device checks on currently connected devices.
+connectedPrereleaseDebugAndroidTest - Installs and runs the tests for prereleaseDebug on connected devices.
+connectedStableDebugAndroidTest - Installs and runs the tests for stableDebug on connected devices.
+deviceAndroidTest - Installs and runs instrumentation tests using all Device Providers.
+deviceCheck - Runs all device checks using Device Providers and Test Servers.
+lint - Runs lint on the default variant.
+lintFix - Runs lint on the default variant and applies any safe suggestions to the source code.
+lintPrereleaseDebug - Print text output from the corresponding lint report task
+lintPrereleaseRelease - Print text output from the corresponding lint report task
+lintStableDebug - Print text output from the corresponding lint report task
+lintStableRelease - Print text output from the corresponding lint report task
+test - Run unit tests for all variants.
+testPrereleaseDebugUnitTest - Run unit tests for the prereleaseDebug build.
+testPrereleaseReleaseUnitTest - Run unit tests for the prereleaseRelease build.
+testStableDebugUnitTest - Run unit tests for the stableDebug build.
+testStableReleaseUnitTest - Run unit tests for the stableRelease build.
+updateLintBaseline - Updates the lint baseline using the default variant.
+
+Other tasks
+-----------
+analyzePrereleaseDebugAndroidTestDependencies
+analyzePrereleaseDebugDependencies
+analyzePrereleaseDebugUnitTestDependencies
+analyzePrereleaseReleaseDependencies
+analyzePrereleaseReleaseUnitTestDependencies
+analyzeStableDebugAndroidTestDependencies
+analyzeStableDebugDependencies
+analyzeStableDebugUnitTestDependencies
+analyzeStableReleaseDependencies
+analyzeStableReleaseUnitTestDependencies
+androidSourcesJar
+asarToCompatSplitsForPrereleaseDebug
+asarToCompatSplitsForPrereleaseRelease
+asarToCompatSplitsForStableDebug
+asarToCompatSplitsForStableRelease
+assemblePrereleaseDebug - Assembles main output for variant prereleaseDebug
+assemblePrereleaseDebugAndroidTest - Assembles main output for variant prereleaseDebugAndroidTest
+assemblePrereleaseDebugUnitTest - Assembles main output for variant prereleaseDebugUnitTest
+assemblePrereleaseRelease - Assembles main output for variant prereleaseRelease
+assemblePrereleaseReleaseUnitTest - Assembles main output for variant prereleaseReleaseUnitTest
+assembleStableDebug - Assembles main output for variant stableDebug
+assembleStableDebugAndroidTest - Assembles main output for variant stableDebugAndroidTest
+assembleStableDebugUnitTest - Assembles main output for variant stableDebugUnitTest
+assembleStableRelease - Assembles main output for variant stableRelease
+assembleStableReleaseUnitTest - Assembles main output for variant stableReleaseUnitTest
+buildPrereleaseDebugPreBundle
+buildPrereleaseReleasePreBundle
+buildStableDebugPreBundle
+buildStableReleasePreBundle
+bundlePrereleaseDebug - Assembles bundle for variant prereleaseDebug
+bundlePrereleaseDebugClassesToCompileJar
+bundlePrereleaseDebugClassesToRuntimeJar
+bundlePrereleaseDebugResources
+bundlePrereleaseRelease - Assembles bundle for variant prereleaseRelease
+bundlePrereleaseReleaseClassesToCompileJar
+bundlePrereleaseReleaseClassesToRuntimeJar
+bundlePrereleaseReleaseResources
+bundleStableDebug - Assembles bundle for variant stableDebug
+bundleStableDebugClassesToCompileJar
+bundleStableDebugClassesToRuntimeJar
+bundleStableDebugResources
+bundleStableRelease - Assembles bundle for variant stableRelease
+bundleStableReleaseClassesToCompileJar
+bundleStableReleaseClassesToRuntimeJar
+bundleStableReleaseResources
+checkLegacyAbi
+checkPrereleaseDebugAarMetadata
+checkPrereleaseDebugAndroidTestAarMetadata
+checkPrereleaseDebugAndroidTestDuplicateClasses
+checkPrereleaseDebugDuplicateClasses
+checkPrereleaseDebugManifest
+checkPrereleaseReleaseAarMetadata
+checkPrereleaseReleaseDuplicateClasses
+checkPrereleaseReleaseManifest
+checkStableDebugAarMetadata
+checkStableDebugAndroidTestAarMetadata
+checkStableDebugAndroidTestDuplicateClasses
+checkStableDebugDuplicateClasses
+checkStableDebugManifest
+checkStableReleaseAarMetadata
+checkStableReleaseDuplicateClasses
+checkStableReleaseManifest
+collectPrereleaseReleaseDependencies
+collectStableReleaseDependencies
+compileLint
+compileLintChecks
+compilePrereleaseDebugAndroidTestJavaWithJavac
+compilePrereleaseDebugAndroidTestKotlin - Compiles the prereleaseDebugAndroidTest kotlin.
+compilePrereleaseDebugAndroidTestNavigationResources
+compilePrereleaseDebugAndroidTestShaders
+compilePrereleaseDebugArtProfile
+compilePrereleaseDebugJavaWithJavac
+compilePrereleaseDebugKotlin - Compiles the prereleaseDebug kotlin.
+compilePrereleaseDebugNavigationResources
+compilePrereleaseDebugShaders
+compilePrereleaseDebugUnitTestJavaWithJavac
+compilePrereleaseDebugUnitTestKotlin - Compiles the prereleaseDebugUnitTest kotlin.
+compilePrereleaseReleaseArtProfile
+compilePrereleaseReleaseJavaWithJavac
+compilePrereleaseReleaseKotlin - Compiles the prereleaseRelease kotlin.
+compilePrereleaseReleaseNavigationResources
+compilePrereleaseReleaseShaders
+compilePrereleaseReleaseUnitTestJavaWithJavac
+compilePrereleaseReleaseUnitTestKotlin - Compiles the prereleaseReleaseUnitTest kotlin.
+compileStableDebugAndroidTestJavaWithJavac
+compileStableDebugAndroidTestKotlin - Compiles the stableDebugAndroidTest kotlin.
+compileStableDebugAndroidTestNavigationResources
+compileStableDebugAndroidTestShaders
+compileStableDebugArtProfile
+compileStableDebugJavaWithJavac
+compileStableDebugKotlin - Compiles the stableDebug kotlin.
+compileStableDebugNavigationResources
+compileStableDebugShaders
+compileStableDebugUnitTestJavaWithJavac
+compileStableDebugUnitTestKotlin - Compiles the stableDebugUnitTest kotlin.
+compileStableReleaseArtProfile
+compileStableReleaseJavaWithJavac
+compileStableReleaseKotlin - Compiles the stableRelease kotlin.
+compileStableReleaseNavigationResources
+compileStableReleaseShaders
+compileStableReleaseUnitTestJavaWithJavac
+compileStableReleaseUnitTestKotlin - Compiles the stableReleaseUnitTest kotlin.
+compressPrereleaseDebugAndroidTestAssets
+compressPrereleaseDebugAssets
+compressPrereleaseReleaseAssets
+compressStableDebugAndroidTestAssets
+compressStableDebugAssets
+compressStableReleaseAssets
+configurePrereleaseReleaseDependencies
+configureStableReleaseDependencies
+consumeConfigAttr
+copyJar
+createMockableJar
+createPrereleaseDebugAndroidTestApkListingFileRedirect
+createPrereleaseDebugApkListingFileRedirect
+createPrereleaseDebugApksFromBundleListingFileRedirect
+createPrereleaseDebugBundleListingFileRedirect
+createPrereleaseDebugCompatibleScreenManifests
+createPrereleaseReleaseApkListingFileRedirect
+createPrereleaseReleaseApksFromBundleListingFileRedirect
+createPrereleaseReleaseBundleListingFileRedirect
+createPrereleaseReleaseCompatibleScreenManifests
+createStableDebugAndroidTestApkListingFileRedirect
+createStableDebugApkListingFileRedirect
+createStableDebugApksFromBundleListingFileRedirect
+createStableDebugBundleListingFileRedirect
+createStableDebugCompatibleScreenManifests
+createStableReleaseApkListingFileRedirect
+createStableReleaseApksFromBundleListingFileRedirect
+createStableReleaseBundleListingFileRedirect
+createStableReleaseCompatibleScreenManifests
+dataBindingGenBaseClassesPrereleaseDebug
+dataBindingGenBaseClassesPrereleaseDebugAndroidTest
+dataBindingGenBaseClassesPrereleaseRelease
+dataBindingGenBaseClassesStableDebug
+dataBindingGenBaseClassesStableDebugAndroidTest
+dataBindingGenBaseClassesStableRelease
+dataBindingMergeDependencyArtifactsPrereleaseDebug
+dataBindingMergeDependencyArtifactsPrereleaseDebugAndroidTest
+dataBindingMergeDependencyArtifactsPrereleaseRelease
+dataBindingMergeDependencyArtifactsStableDebug
+dataBindingMergeDependencyArtifactsStableDebugAndroidTest
+dataBindingMergeDependencyArtifactsStableRelease
+desugarPrereleaseDebugAndroidTestFileDependencies
+desugarPrereleaseDebugFileDependencies
+desugarPrereleaseReleaseFileDependencies
+desugarStableDebugAndroidTestFileDependencies
+desugarStableDebugFileDependencies
+desugarStableReleaseFileDependencies
+dexBuilderPrereleaseDebug
+dexBuilderPrereleaseDebugAndroidTest
+dexBuilderPrereleaseRelease
+dexBuilderStableDebug
+dexBuilderStableDebugAndroidTest
+dexBuilderStableRelease
+dumpLegacyAbi
+expandPrereleaseReleaseL8ArtProfileWildcards
+expandStableReleaseL8ArtProfileWildcards
+extractApksForPrereleaseDebug
+extractApksForPrereleaseRelease
+extractApksForStableDebug
+extractApksForStableRelease
+extractApksFromBundleForPrereleaseDebug
+extractApksFromBundleForPrereleaseRelease
+extractApksFromBundleForStableDebug
+extractApksFromBundleForStableRelease
+extractDeepLinksPrereleaseDebug
+extractDeepLinksPrereleaseRelease
+extractDeepLinksStableDebug
+extractDeepLinksStableRelease
+extractPrereleaseDebugNativeDebugMetadata
+extractPrereleaseDebugNativeSymbolTables
+extractPrereleaseReleaseNativeDebugMetadata
+extractPrereleaseReleaseNativeSymbolTables
+extractPrereleaseReleaseVersionControlInfo
+extractProguardFiles
+extractStableDebugNativeDebugMetadata
+extractStableDebugNativeSymbolTables
+extractStableReleaseNativeDebugMetadata
+extractStableReleaseNativeSymbolTables
+extractStableReleaseVersionControlInfo
+generatePrereleaseDebugAndroidTestAssets
+generatePrereleaseDebugAndroidTestBuildConfig
+generatePrereleaseDebugAndroidTestLintModel
+generatePrereleaseDebugAndroidTestResources
+generatePrereleaseDebugAndroidTestResValues
+generatePrereleaseDebugAndroidTestSources
+generatePrereleaseDebugAssets
+generatePrereleaseDebugBuildConfig
+generatePrereleaseDebugFeatureMetadata
+generatePrereleaseDebugFeatureTransitiveDeps
+generatePrereleaseDebugLintModel
+generatePrereleaseDebugLintReportModel
+generatePrereleaseDebugManifestClass
+generatePrereleaseDebugResources
+generatePrereleaseDebugResValues
+generatePrereleaseDebugSources
+generatePrereleaseDebugUnitTestAssets
+generatePrereleaseDebugUnitTestLintModel
+generatePrereleaseDebugUnitTestResources
+generatePrereleaseDebugUnitTestSources
+generatePrereleaseReleaseAssets
+generatePrereleaseReleaseBuildConfig
+generatePrereleaseReleaseFeatureMetadata
+generatePrereleaseReleaseFeatureTransitiveDeps
+generatePrereleaseReleaseLintModel
+generatePrereleaseReleaseLintReportModel
+generatePrereleaseReleaseManifestClass
+generatePrereleaseReleaseResources
+generatePrereleaseReleaseResValues
+generatePrereleaseReleaseSources
+generatePrereleaseReleaseUnitTestAssets
+generatePrereleaseReleaseUnitTestLintModel
+generatePrereleaseReleaseUnitTestResources
+generatePrereleaseReleaseUnitTestSources
+generateStableDebugAndroidTestAssets
+generateStableDebugAndroidTestBuildConfig
+generateStableDebugAndroidTestLintModel
+generateStableDebugAndroidTestResources
+generateStableDebugAndroidTestResValues
+generateStableDebugAndroidTestSources
+generateStableDebugAssets
+generateStableDebugBuildConfig
+generateStableDebugFeatureMetadata
+generateStableDebugFeatureTransitiveDeps
+generateStableDebugLintModel
+generateStableDebugLintReportModel
+generateStableDebugManifestClass
+generateStableDebugResources
+generateStableDebugResValues
+generateStableDebugSources
+generateStableDebugUnitTestAssets
+generateStableDebugUnitTestLintModel
+generateStableDebugUnitTestResources
+generateStableDebugUnitTestSources
+generateStableReleaseAssets
+generateStableReleaseBuildConfig
+generateStableReleaseFeatureMetadata
+generateStableReleaseFeatureTransitiveDeps
+generateStableReleaseLintModel
+generateStableReleaseLintReportModel
+generateStableReleaseManifestClass
+generateStableReleaseResources
+generateStableReleaseResValues
+generateStableReleaseSources
+generateStableReleaseUnitTestAssets
+generateStableReleaseUnitTestLintModel
+generateStableReleaseUnitTestResources
+generateStableReleaseUnitTestSources
+javaPreCompilePrereleaseDebug
+javaPreCompilePrereleaseDebugAndroidTest
+javaPreCompilePrereleaseDebugUnitTest
+javaPreCompilePrereleaseRelease
+javaPreCompilePrereleaseReleaseUnitTest
+javaPreCompileStableDebug
+javaPreCompileStableDebugAndroidTest
+javaPreCompileStableDebugUnitTest
+javaPreCompileStableRelease
+javaPreCompileStableReleaseUnitTest
+l8DexDesugarLibPrereleaseDebug
+l8DexDesugarLibPrereleaseRelease
+l8DexDesugarLibStableDebug
+l8DexDesugarLibStableRelease
+lintAnalyzePrereleaseDebug - Run lint analysis on the prereleaseDebug component
+lintAnalyzePrereleaseDebugAndroidTest - Run lint analysis on the prereleaseDebugAndroidTest component
+lintAnalyzePrereleaseDebugUnitTest - Run lint analysis on the prereleaseDebugUnitTest component
+lintAnalyzePrereleaseRelease - Run lint analysis on the prereleaseRelease component
+lintAnalyzePrereleaseReleaseUnitTest - Run lint analysis on the prereleaseReleaseUnitTest component
+lintAnalyzeStableDebug - Run lint analysis on the stableDebug component
+lintAnalyzeStableDebugAndroidTest - Run lint analysis on the stableDebugAndroidTest component
+lintAnalyzeStableDebugUnitTest - Run lint analysis on the stableDebugUnitTest component
+lintAnalyzeStableRelease - Run lint analysis on the stableRelease component
+lintAnalyzeStableReleaseUnitTest - Run lint analysis on the stableReleaseUnitTest component
+lintFixPrereleaseDebug - Fix lint on the prereleaseDebug variant
+lintFixPrereleaseRelease - Fix lint on the prereleaseRelease variant
+lintFixStableDebug - Fix lint on the stableDebug variant
+lintFixStableRelease - Fix lint on the stableRelease variant
+lintReportPrereleaseDebug - Run lint on the prereleaseDebug variant
+lintReportPrereleaseRelease - Run lint on the prereleaseRelease variant
+lintReportStableDebug - Run lint on the stableDebug variant
+lintReportStableRelease - Run lint on the stableRelease variant
+logLinkDokkaGeneratePublicationHtml
+makeApkFromBundleForPrereleaseDebug
+makeApkFromBundleForPrereleaseRelease
+makeApkFromBundleForStableDebug
+makeApkFromBundleForStableRelease
+makeJar
+mapPrereleaseDebugAndroidTestSourceSetPaths
+mapPrereleaseDebugSourceSetPaths
+mapPrereleaseReleaseSourceSetPaths
+mapStableDebugAndroidTestSourceSetPaths
+mapStableDebugSourceSetPaths
+mapStableReleaseSourceSetPaths
+mergeDexPrereleaseRelease
+mergeDexStableRelease
+mergeExtDexPrereleaseDebug
+mergeExtDexPrereleaseDebugAndroidTest
+mergeExtDexPrereleaseRelease
+mergeExtDexStableDebug
+mergeExtDexStableDebugAndroidTest
+mergeExtDexStableRelease
+mergeLibDexPrereleaseDebug
+mergeLibDexPrereleaseDebugAndroidTest
+mergeLibDexStableDebug
+mergeLibDexStableDebugAndroidTest
+mergePrereleaseDebugAndroidTestAssets
+mergePrereleaseDebugAndroidTestGeneratedProguardFiles
+mergePrereleaseDebugAndroidTestJavaResource
+mergePrereleaseDebugAndroidTestJniLibFolders
+mergePrereleaseDebugAndroidTestNativeLibs
+mergePrereleaseDebugAndroidTestResources
+mergePrereleaseDebugAndroidTestShaders
+mergePrereleaseDebugArtProfile
+mergePrereleaseDebugAssets
+mergePrereleaseDebugGeneratedProguardFiles
+mergePrereleaseDebugJavaResource
+mergePrereleaseDebugJniLibFolders
+mergePrereleaseDebugNativeDebugMetadata
+mergePrereleaseDebugNativeLibs
+mergePrereleaseDebugResources
+mergePrereleaseDebugShaders
+mergePrereleaseDebugStartupProfile
+mergePrereleaseReleaseArtProfile
+mergePrereleaseReleaseAssets
+mergePrereleaseReleaseGeneratedProguardFiles
+mergePrereleaseReleaseGlobalSynthetics
+mergePrereleaseReleaseJavaResource
+mergePrereleaseReleaseJniLibFolders
+mergePrereleaseReleaseNativeDebugMetadata
+mergePrereleaseReleaseNativeLibs
+mergePrereleaseReleaseResources
+mergePrereleaseReleaseShaders
+mergePrereleaseReleaseStartupProfile
+mergeProjectDexPrereleaseDebug
+mergeProjectDexPrereleaseDebugAndroidTest
+mergeProjectDexStableDebug
+mergeProjectDexStableDebugAndroidTest
+mergeStableDebugAndroidTestAssets
+mergeStableDebugAndroidTestGeneratedProguardFiles
+mergeStableDebugAndroidTestJavaResource
+mergeStableDebugAndroidTestJniLibFolders
+mergeStableDebugAndroidTestNativeLibs
+mergeStableDebugAndroidTestResources
+mergeStableDebugAndroidTestShaders
+mergeStableDebugArtProfile
+mergeStableDebugAssets
+mergeStableDebugGeneratedProguardFiles
+mergeStableDebugJavaResource
+mergeStableDebugJniLibFolders
+mergeStableDebugNativeDebugMetadata
+mergeStableDebugNativeLibs
+mergeStableDebugResources
+mergeStableDebugShaders
+mergeStableDebugStartupProfile
+mergeStableReleaseArtProfile
+mergeStableReleaseAssets
+mergeStableReleaseGeneratedProguardFiles
+mergeStableReleaseGlobalSynthetics
+mergeStableReleaseJavaResource
+mergeStableReleaseJniLibFolders
+mergeStableReleaseNativeDebugMetadata
+mergeStableReleaseNativeLibs
+mergeStableReleaseResources
+mergeStableReleaseShaders
+mergeStableReleaseStartupProfile
+optimizePrereleaseReleaseResources
+optimizeStableReleaseResources
+packagePrereleaseDebug
+packagePrereleaseDebugAndroidTest
+packagePrereleaseDebugBundle
+packagePrereleaseDebugResources
+packagePrereleaseDebugUniversalApk
+packagePrereleaseRelease
+packagePrereleaseReleaseBundle
+packagePrereleaseReleaseResources
+packagePrereleaseReleaseUniversalApk
+packageStableDebug
+packageStableDebugAndroidTest
+packageStableDebugBundle
+packageStableDebugResources
+packageStableDebugUniversalApk
+packageStableRelease
+packageStableReleaseBundle
+packageStableReleaseResources
+packageStableReleaseUniversalApk
+parsePrereleaseDebugIntegrityConfig
+parsePrereleaseDebugLocalResources
+parsePrereleaseReleaseIntegrityConfig
+parsePrereleaseReleaseLocalResources
+parseStableDebugIntegrityConfig
+parseStableDebugLocalResources
+parseStableReleaseIntegrityConfig
+parseStableReleaseLocalResources
+preBuild
+prepareLintJarForPublish
+prePrereleaseDebugAndroidTestBuild
+prePrereleaseDebugBuild
+prePrereleaseDebugUnitTestBuild
+prePrereleaseReleaseBuild
+prePrereleaseReleaseUnitTestBuild
+preStableDebugAndroidTestBuild
+preStableDebugBuild
+preStableDebugUnitTestBuild
+preStableReleaseBuild
+preStableReleaseUnitTestBuild
+processApplicationManifestPrereleaseDebugForBundle
+processApplicationManifestPrereleaseReleaseForBundle
+processApplicationManifestStableDebugForBundle
+processApplicationManifestStableReleaseForBundle
+processManifestPrereleaseDebugForFeature
+processManifestPrereleaseReleaseForFeature
+processManifestStableDebugForFeature
+processManifestStableReleaseForFeature
+processPrereleaseDebugAndroidTestJavaRes
+processPrereleaseDebugAndroidTestManifest
+processPrereleaseDebugAndroidTestNavigationResources
+processPrereleaseDebugAndroidTestResources
+processPrereleaseDebugJavaRes
+processPrereleaseDebugMainManifest
+processPrereleaseDebugManifest
+processPrereleaseDebugManifestForPackage
+processPrereleaseDebugNavigationResources
+processPrereleaseDebugResources
+processPrereleaseDebugUnitTestJavaRes
+processPrereleaseReleaseJavaRes
+processPrereleaseReleaseMainManifest
+processPrereleaseReleaseManifest
+processPrereleaseReleaseManifestForPackage
+processPrereleaseReleaseNavigationResources
+processPrereleaseReleaseResources
+processPrereleaseReleaseUnitTestJavaRes
+processStableDebugAndroidTestJavaRes
+processStableDebugAndroidTestManifest
+processStableDebugAndroidTestNavigationResources
+processStableDebugAndroidTestResources
+processStableDebugJavaRes
+processStableDebugMainManifest
+processStableDebugManifest
+processStableDebugManifestForPackage
+processStableDebugNavigationResources
+processStableDebugResources
+processStableDebugUnitTestJavaRes
+processStableReleaseJavaRes
+processStableReleaseMainManifest
+processStableReleaseManifest
+processStableReleaseManifestForPackage
+processStableReleaseNavigationResources
+processStableReleaseResources
+processStableReleaseUnitTestJavaRes
+producePrereleaseDebugBundleIdeListingFile
+producePrereleaseReleaseBundleIdeListingFile
+produceStableDebugBundleIdeListingFile
+produceStableReleaseBundleIdeListingFile
+resolveConfigAttr
+sdkPrereleaseReleaseDependencyData
+sdkStableReleaseDependencyData
+signingConfigWriterPrereleaseDebug
+signingConfigWriterPrereleaseDebugAndroidTest
+signingConfigWriterPrereleaseRelease
+signingConfigWriterStableDebug
+signingConfigWriterStableDebugAndroidTest
+signingConfigWriterStableRelease
+signPrereleaseDebugBundle
+signPrereleaseReleaseBundle
+signStableDebugBundle
+signStableReleaseBundle
+stripPrereleaseDebugAndroidTestDebugSymbols
+stripPrereleaseDebugDebugSymbols
+stripPrereleaseReleaseDebugSymbols
+stripStableDebugAndroidTestDebugSymbols
+stripStableDebugDebugSymbols
+stripStableReleaseDebugSymbols
+updateLegacyAbi
+updateLintBaselinePrereleaseDebug - Update the lint baseline using the prereleaseDebug variant
+updateLintBaselinePrereleaseRelease - Update the lint baseline using the prereleaseRelease variant
+updateLintBaselineStableDebug - Update the lint baseline using the stableDebug variant
+updateLintBaselineStableRelease - Update the lint baseline using the stableRelease variant
+validateSigningPrereleaseDebug
+validateSigningPrereleaseDebugAndroidTest
+validateSigningPrereleaseRelease
+validateSigningStableDebug
+validateSigningStableDebugAndroidTest
+validateSigningStableRelease
+writePrereleaseDebugAndroidTestSigningConfigVersions
+writePrereleaseDebugApplicationId
+writePrereleaseDebugAppMetadata
+writePrereleaseDebugModuleMetadata
+writePrereleaseDebugSigningConfigVersions
+writePrereleaseReleaseApplicationId
+writePrereleaseReleaseAppMetadata
+writePrereleaseReleaseModuleMetadata
+writePrereleaseReleaseSigningConfigVersions
+writeStableDebugAndroidTestSigningConfigVersions
+writeStableDebugApplicationId
+writeStableDebugAppMetadata
+writeStableDebugModuleMetadata
+writeStableDebugSigningConfigVersions
+writeStableReleaseApplicationId
+writeStableReleaseAppMetadata
+writeStableReleaseModuleMetadata
+writeStableReleaseSigningConfigVersions
+zipApksForPrereleaseDebug
+zipApksForPrereleaseRelease
+zipApksForStableDebug
+zipApksForStableRelease
+
+Rules
+-----
+Pattern: clean<TaskName>: Cleans the output files of a task.
+Pattern: build<ConfigurationName>: Assembles the artifacts of a configuration.
+
+[Incubating] Problems report is available at: file:///C:/Users/alyab/AndroidStudioProjects/cloudstream-standard-v2/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 3s
+1 actionable task: 1 executed
+Configuration cache entry stored.

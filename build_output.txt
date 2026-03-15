@@ -1,0 +1,98 @@
+Reusing configuration cache.
+> Task :app:preBuild UP-TO-DATE
+> Task :library:preBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :library:preDebugBuild UP-TO-DATE
+> Task :app:preStableDebugBuild UP-TO-DATE
+> Task :library:kmpPartiallyResolvedDependenciesChecker
+> Task :library:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:mergeStableDebugNativeDebugMetadata NO-SOURCE
+> Task :library:debugAssetsCopyForAGP NO-SOURCE
+> Task :library:generateBuildKonfig UP-TO-DATE
+> Task :app:generateStableDebugBuildConfig UP-TO-DATE
+> Task :library:processDebugNavigationResources UP-TO-DATE
+> Task :app:generateStableDebugResValues UP-TO-DATE
+> Task :library:generateDebugResValues UP-TO-DATE
+> Task :app:createStableDebugCompatibleScreenManifests UP-TO-DATE
+> Task :library:writeDebugAarMetadata UP-TO-DATE
+> Task :library:javaPreCompileDebug UP-TO-DATE
+> Task :library:processDebugManifest UP-TO-DATE
+> Task :app:javaPreCompileStableDebug UP-TO-DATE
+> Task :app:mergeStableDebugShaders UP-TO-DATE
+> Task :library:mergeDebugShaders UP-TO-DATE
+> Task :app:extractDeepLinksStableDebug UP-TO-DATE
+> Task :app:generateStableDebugResources UP-TO-DATE
+> Task :library:generateDebugResources UP-TO-DATE
+> Task :library:extractDeepLinksDebug UP-TO-DATE
+> Task :library:compileDebugShaders NO-SOURCE
+> Task :library:generateDebugAssets UP-TO-DATE
+> Task :app:compileStableDebugShaders NO-SOURCE
+> Task :app:mergeStableDebugJniLibFolders UP-TO-DATE
+> Task :app:generateStableDebugAssets UP-TO-DATE
+> Task :app:l8DexDesugarLibStableDebug UP-TO-DATE
+> Task :app:processStableDebugNavigationResources UP-TO-DATE
+> Task :app:writeStableDebugAppMetadata UP-TO-DATE
+> Task :app:compileStableDebugNavigationResources UP-TO-DATE
+> Task :app:validateSigningStableDebug UP-TO-DATE
+> Task :app:checkStableDebugAarMetadata UP-TO-DATE
+> Task :library:packageDebugResources UP-TO-DATE
+> Task :library:mergeDebugJniLibFolders UP-TO-DATE
+> Task :library:mergeDebugAssets UP-TO-DATE
+> Task :app:packageStableDebugResources UP-TO-DATE
+> Task :app:writeStableDebugSigningConfigVersions UP-TO-DATE
+> Task :app:desugarStableDebugFileDependencies UP-TO-DATE
+> Task :app:checkStableDebugDuplicateClasses UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsStableDebug UP-TO-DATE
+> Task :library:parseDebugLocalResources UP-TO-DATE
+> Task :app:processStableDebugMainManifest UP-TO-DATE
+> Task :app:mergeStableDebugAssets UP-TO-DATE
+> Task :app:mapStableDebugSourceSetPaths UP-TO-DATE
+> Task :library:mergeDebugNativeLibs NO-SOURCE
+> Task :library:compileDebugLibraryResources UP-TO-DATE
+> Task :app:parseStableDebugLocalResources UP-TO-DATE
+> Task :app:compressStableDebugAssets UP-TO-DATE
+> Task :app:processStableDebugManifest UP-TO-DATE
+> Task :library:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeStableDebugResources UP-TO-DATE
+> Task :library:generateDebugRFile UP-TO-DATE
+> Task :app:processStableDebugManifestForPackage UP-TO-DATE
+> Task :app:mergeStableDebugNativeLibs UP-TO-DATE
+> Task :app:stripStableDebugDebugSymbols UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesStableDebug UP-TO-DATE
+> Task :library:compileDebugKotlinAndroid UP-TO-DATE
+> Task :library:processDebugJavaRes UP-TO-DATE
+> Task :library:compileDebugJavaWithJavac NO-SOURCE
+> Task :library:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :library:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :app:mergeLibDexStableDebug UP-TO-DATE
+> Task :app:processStableDebugResources UP-TO-DATE
+> Task :app:mergeExtDexStableDebug UP-TO-DATE
+
+> Task :app:compileStableDebugKotlin FAILED
+e: file:///C:/Users/alyab/AndroidStudioProjects/cloudstream-standard-v2/app/src/main/java/com/lagradost/cloudstream3/ui/result/ResultViewModel2.kt:486:43 Unresolved reference 'collectLatest'.
+e: file:///C:/Users/alyab/AndroidStudioProjects/cloudstream-standard-v2/app/src/main/java/com/lagradost/cloudstream3/ui/result/ResultViewModel2.kt:486:59 Cannot infer type for value parameter 'devices'. Specify it explicitly.
+e: file:///C:/Users/alyab/AndroidStudioProjects/cloudstream-standard-v2/app/src/main/java/com/lagradost/cloudstream3/ui/result/ResultViewModel2.kt:489:27 Method 'iterator()' is ambiguous for this expression. Applicable candidates:
+fun <T> Enumeration<T>.iterator(): Iterator<T>
+fun <T> Iterator<T>.iterator(): Iterator<T>
+fun <K, V> Map<out K, V>.iterator(): Iterator<Map.Entry<K, V>>
+fun <K, V> MutableMap<K, V>.iterator(): MutableIterator<MutableMap.MutableEntry<K, V>>
+fun CharSequence.iterator(): CharIterator
+fun BufferedInputStream.iterator(): ByteIterator
+e: file:///C:/Users/alyab/AndroidStudioProjects/cloudstream-standard-v2/app/src/main/java/com/lagradost/cloudstream3/ui/result/ResultViewModel2.kt:499:40 Return type mismatch: expected 'ERROR CLASS: Cannot infer type variable TypeVariable(_L)', actual 'Unit'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileStableDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 14s
+55 actionable tasks: 2 executed, 53 up-to-date
+Configuration cache entry reused.
