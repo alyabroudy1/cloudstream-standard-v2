@@ -455,13 +455,18 @@ class HomeParentItemAdapterPreview(
             resumeRecyclerView.adapter = resumeAdapter
             bookmarkRecyclerView.adapter = bookmarkAdapter
 
+            // LinearListLayout maps FocusDirection.Start → nextFocusRight in RTL,
+            // so swap sidebar (Start) target into nextRight when RTL.
+            val isRtl = resumeRecyclerView.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+            val sidebarFocus = R.id.nav_rail_view
+            val selfFocus = FOCUS_SELF
             resumeRecyclerView.setLinearListLayout(
-                nextLeft = R.id.nav_rail_view,
-                nextRight = FOCUS_SELF
+                nextLeft = if (isRtl) selfFocus else sidebarFocus,
+                nextRight = if (isRtl) sidebarFocus else selfFocus
             )
             bookmarkRecyclerView.setLinearListLayout(
-                nextLeft = R.id.nav_rail_view,
-                nextRight = FOCUS_SELF
+                nextLeft = if (isRtl) selfFocus else sidebarFocus,
+                nextRight = if (isRtl) sidebarFocus else selfFocus
             )
 
             fixPaddingStatusbarMargin(topPadding)

@@ -434,6 +434,37 @@ class ResultFragmentTv : Fragment() {
                 }
             }
 
+            // RTL-aware focus navigation for the episode panel.
+            // In LTR: panel is on the right, so right=deeper into panel, left=back to main.
+            // In RTL: panel is on the left, so left=deeper into panel, right=back to main.
+            val isRtl = view.isRtl()
+
+            // The direction that goes "into" the episode panel (away from main content)
+            // LTR: right, RTL: left
+            fun View.setNextFocusInward(targetId: Int) {
+                if (isRtl) nextFocusLeftId = targetId else nextFocusRightId = targetId
+            }
+            // The direction that goes "out" of the episode panel (back to main content)
+            // LTR: left, RTL: right
+            fun View.setNextFocusOutward(targetId: Int) {
+                if (isRtl) nextFocusRightId = targetId else nextFocusLeftId = targetId
+            }
+
+            // Episodes show button → opens episode panel
+            resultEpisodesShowButton.setNextFocusInward(R.id.redirect_to_episodes)
+
+            // Episode panel chain: dub → season → range → episodes
+            resultDubSelection.setNextFocusOutward(R.id.result_episodes_show)
+            resultDubSelection.setNextFocusInward(R.id.result_season_selection)
+
+            resultSeasonSelection.setNextFocusOutward(R.id.result_dub_selection)
+            resultSeasonSelection.setNextFocusInward(R.id.result_range_selection)
+
+            resultRangeSelection.setNextFocusOutward(R.id.result_season_selection)
+            resultRangeSelection.setNextFocusInward(R.id.result_episodes)
+
+            resultEpisodes.setNextFocusOutward(R.id.result_range_selection)
+
             resultEpisodes.setLinearListLayout(
                 isHorizontal = false,
                 nextUp = FOCUS_SELF,
