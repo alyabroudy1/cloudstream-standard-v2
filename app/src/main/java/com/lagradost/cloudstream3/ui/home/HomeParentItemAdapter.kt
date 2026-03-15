@@ -123,13 +123,12 @@ open class ParentItemAdapter(
                 }
             }
 
-            // LinearListLayout internally maps FocusDirection.Start → nextFocusRight in RTL.
-            // So we must swap: in RTL, the sidebar (Start) goes in nextRight, not nextLeft.
-            val isRtl = homeChildRecyclerview.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+            // LinearListLayout handles RTL mapping internally
+            // (Start → nextFocusRight in RTL), so use physical LTR order.
             homeChildRecyclerview.setLinearListLayout(
                 isHorizontal = true,
-                nextLeft = if (isRtl) endFocus else startFocus,
-                nextRight = if (isRtl) startFocus else endFocus,
+                nextLeft = startFocus,
+                nextRight = endFocus,
             )
             homeChildMoreInfo.text = info.name
 

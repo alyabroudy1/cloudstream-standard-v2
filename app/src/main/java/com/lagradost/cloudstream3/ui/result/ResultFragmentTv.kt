@@ -435,35 +435,36 @@ class ResultFragmentTv : Fragment() {
             }
 
             // RTL-aware focus navigation for the episode panel.
-            // In LTR: panel is on the right, so right=deeper into panel, left=back to main.
-            // In RTL: panel is on the left, so left=deeper into panel, right=back to main.
+            // 
+            // IMPORTANT: LinearListLayout already handles RTL mapping internally:
+            //   D-pad LEFT → FocusDirection.Start → reads nextFocusRight in RTL
+            //   D-pad RIGHT → FocusDirection.End → reads nextFocusLeft in RTL
+            // So RecyclerViews must use PHYSICAL LTR directions (left=outward, right=inward)
+            // to avoid double-swapping. Only regular Views (no LinearListLayout) need
+            // manual RTL swapping.
             val isRtl = view.isRtl()
 
-            // The direction that goes "into" the episode panel (away from main content)
-            // LTR: right, RTL: left
-            fun View.setNextFocusInward(targetId: Int) {
-                if (isRtl) nextFocusLeftId = targetId else nextFocusRightId = targetId
-            }
-            // The direction that goes "out" of the episode panel (back to main content)
-            // LTR: left, RTL: right
-            fun View.setNextFocusOutward(targetId: Int) {
-                if (isRtl) nextFocusRightId = targetId else nextFocusLeftId = targetId
+            // Episodes show button is a regular View (no LinearListLayout),
+            // so it needs manual RTL swap for the direction that opens the panel.
+            if (isRtl) {
+                resultEpisodesShowButton.nextFocusLeftId = R.id.redirect_to_episodes
+            } else {
+                resultEpisodesShowButton.nextFocusRightId = R.id.redirect_to_episodes
             }
 
-            // Episodes show button → opens episode panel
-            resultEpisodesShowButton.setNextFocusInward(R.id.redirect_to_episodes)
+            // Episode panel chain (RecyclerViews with LinearListLayout):
+            // Use physical LTR order — LinearListLayout handles RTL mapping internally.
+            // left = outward (toward main content), right = inward (deeper into panel)
+            resultDubSelection.nextFocusLeftId = R.id.result_episodes_show
+            resultDubSelection.nextFocusRightId = R.id.result_season_selection
 
-            // Episode panel chain: dub → season → range → episodes
-            resultDubSelection.setNextFocusOutward(R.id.result_episodes_show)
-            resultDubSelection.setNextFocusInward(R.id.result_season_selection)
+            resultSeasonSelection.nextFocusLeftId = R.id.result_dub_selection
+            resultSeasonSelection.nextFocusRightId = R.id.result_range_selection
 
-            resultSeasonSelection.setNextFocusOutward(R.id.result_dub_selection)
-            resultSeasonSelection.setNextFocusInward(R.id.result_range_selection)
+            resultRangeSelection.nextFocusLeftId = R.id.result_season_selection
+            resultRangeSelection.nextFocusRightId = R.id.result_episodes
 
-            resultRangeSelection.setNextFocusOutward(R.id.result_season_selection)
-            resultRangeSelection.setNextFocusInward(R.id.result_episodes)
-
-            resultEpisodes.setNextFocusOutward(R.id.result_range_selection)
+            resultEpisodes.nextFocusLeftId = R.id.result_range_selection
 
             resultEpisodes.setLinearListLayout(
                 isHorizontal = false,
