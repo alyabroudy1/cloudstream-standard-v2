@@ -110,11 +110,13 @@ class ApkInstaller(private val service: PackageInstallerService) {
                     inputStream.close()
                 }
 
-            // We must create an explicit intent or it will fail on Android 15+
-            val installIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { 
-                Intent(service, PackageInstallerService::class.java)
-                    .setAction(INSTALL_ACTION) 
-            } else Intent(INSTALL_ACTION) 
+            // Note: On Android 14+, pending intents should be explicit.
+            // Using setPackage() restricts it to our app without incorrectly targeting a Service class
+            // which would break dynamically registered broadcast receivers.
+            val installIntent = Intent(INSTALL_ACTION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                installIntent.setPackage(context.packageName)
+            }
 
             val installFlags = when {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> PendingIntent.FLAG_MUTABLE
