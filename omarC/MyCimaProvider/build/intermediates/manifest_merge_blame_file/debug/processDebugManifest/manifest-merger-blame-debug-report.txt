@@ -1,0 +1,59 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.mycima" >
+4
+5    <uses-sdk android:minSdkVersion="21" />
+6
+7    <application>
+7-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:3:5-12:19
+8        <meta-data
+8-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:4:9-90
+9            android:name="CloudstreamPluginName"
+9-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:4:20-56
+10            android:value="MyCimaProvider" />
+10-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:4:57-87
+11        <meta-data
+11-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:5:9-83
+12            android:name="CloudstreamPluginAuthor"
+12-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:5:20-58
+13            android:value="omarC" />
+13-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:5:59-80
+14        <meta-data
+14-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:6:9-141
+15            android:name="CloudstreamPluginDescription"
+15-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:6:20-63
+16            android:value="MyCima provider utilizing shared bypassing infrastructure." />
+16-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:6:64-138
+17        <meta-data
+17-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:7:9-108
+18            android:name="CloudstreamPluginTypes"
+18-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:7:20-57
+19            android:value="TvSeries,Movie,Anime,AsianDrama" />
+19-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:7:58-105
+20        <meta-data
+20-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:8:9-84
+21            android:name="CloudstreamPluginVersion"
+21-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:8:20-59
+22            android:value="1.0.0" />
+22-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:8:60-81
+23        <meta-data
+23-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:9:9-100
+24            android:name="CloudstreamPluginClass"
+24-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:9:20-57
+25            android:value="com.mycima.MyCimaPlugin" />
+25-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:9:58-97
+26        <meta-data
+26-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:10:9-82
+27            android:name="CloudstreamPluginLanguage"
+27-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:10:20-60
+28            android:value="ar" />
+28-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:10:61-79
+29        <meta-data
+29-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:11:9-133
+30            android:name="CloudstreamPluginIcon"
+30-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:11:20-56
+31            android:value="https://mycima.boo/wp-content/uploads/2021/08/favicon.ico" />
+31-->/Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:11:57-130
+32    </application>
+33
+34</manifest>

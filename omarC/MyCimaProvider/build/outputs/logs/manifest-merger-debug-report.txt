@@ -1,0 +1,66 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:2:1-13:12
+INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:2:1-13:12
+	package
+		INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:2:11-69
+application
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:3:5-12:19
+meta-data#CloudstreamPluginName
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:4:9-90
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:4:57-87
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:4:20-56
+meta-data#CloudstreamPluginAuthor
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:5:9-83
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:5:59-80
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:5:20-58
+meta-data#CloudstreamPluginDescription
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:6:9-141
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:6:64-138
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:6:20-63
+meta-data#CloudstreamPluginTypes
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:7:9-108
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:7:58-105
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:7:20-57
+meta-data#CloudstreamPluginVersion
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:8:9-84
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:8:60-81
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:8:20-59
+meta-data#CloudstreamPluginClass
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:9:9-100
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:9:58-97
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:9:20-57
+meta-data#CloudstreamPluginLanguage
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:10:9-82
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:10:61-79
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:10:20-60
+meta-data#CloudstreamPluginIcon
+ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:11:9-133
+	android:value
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:11:57-130
+	android:name
+		ADDED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml:11:20-56
+uses-sdk
+INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml
+INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/mohammad/AndroidStudioProjects/cloudstream-standard-v2/omarC/MyCimaProvider/src/main/AndroidManifest.xml
