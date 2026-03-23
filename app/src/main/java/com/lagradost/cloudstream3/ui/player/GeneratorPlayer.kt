@@ -2009,7 +2009,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                     isHorizontal = false,
                     nextUp = FOCUS_SELF,
                     nextDown = FOCUS_SELF,
-                    nextEnd = FOCUS_SELF,
+                    nextRight = FOCUS_SELF,
                 )
                 val episodes = allMeta ?: emptyList()
                 (playerEpisodeList.adapter as? EpisodeAdapter)?.updateList(episodes)

@@ -16,30 +16,41 @@ const val FOCUS_INHERIT = FOCUS_SELF - 1
 
 fun RecyclerView?.setLinearListLayout(
     isHorizontal: Boolean = true,
-    nextStart: Int = FOCUS_INHERIT,
-    nextEnd: Int = FOCUS_INHERIT,
+    nextLeft: Int = FOCUS_INHERIT,
+    nextRight: Int = FOCUS_INHERIT,
     nextUp: Int = FOCUS_INHERIT,
-    nextDown: Int = FOCUS_INHERIT
+    nextDown: Int = FOCUS_INHERIT,
+    nextStart: Int = FOCUS_INHERIT,
+    nextEnd: Int = FOCUS_INHERIT
 ) {
     if (this == null) return
     val ctx = this.context ?: return
-    // Map logical Start/End to physical Left/Right based on layout direction.
-    // In LTR: Start=Left, End=Right.  In RTL: Start=Right, End=Left.
-    val isRtl = this.layoutDirection == View.LAYOUT_DIRECTION_RTL
+
+    val isRtl = ctx.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
     val physicalLeft = if (isRtl) nextEnd else nextStart
     val physicalRight = if (isRtl) nextStart else nextEnd
-    android.util.Log.d("RTL_DEBUG", "setLinearListLayout: this=$this isRtl=$isRtl nextStart=$nextStart nextEnd=$nextEnd physicalLeft=$physicalLeft physicalRight=$physicalRight")
+
+    val fallbackLeft = this.nextFocusLeftId
+    val fallbackRight = this.nextFocusRightId
+
+    android.util.Log.d("RTL_DEBUG", "setLinearListLayout -> View: ${this.id} (${this.javaClass.simpleName}) | isRtl: $isRtl | nextStart: $nextStart | nextEnd: $nextEnd | physicalLeft (computed): $physicalLeft | physicalRight (computed): $physicalRight | fallbackLeft: $fallbackLeft | fallbackRight: $fallbackRight")
+
     this.layoutManager = (this.layoutManager as? LinearListLayout ?: LinearListLayout(ctx)).apply {
         if (isHorizontal) setHorizontal() else setVertical()
+        
+        val actualLeft = if (nextStart != FOCUS_INHERIT || nextEnd != FOCUS_INHERIT) physicalLeft else nextLeft
+        val actualRight = if (nextStart != FOCUS_INHERIT || nextEnd != FOCUS_INHERIT) physicalRight else nextRight
+        
         nextFocusLeft =
-            if (physicalLeft == FOCUS_INHERIT) this@setLinearListLayout.nextFocusLeftId else physicalLeft
+            if (actualLeft == FOCUS_INHERIT) this@setLinearListLayout.nextFocusLeftId else actualLeft
         nextFocusRight =
-            if (physicalRight == FOCUS_INHERIT) this@setLinearListLayout.nextFocusRightId else physicalRight
+            if (actualRight == FOCUS_INHERIT) this@setLinearListLayout.nextFocusRightId else actualRight
         nextFocusUp =
             if (nextUp == FOCUS_INHERIT) this@setLinearListLayout.nextFocusUpId else nextUp
         nextFocusDown =
             if (nextDown == FOCUS_INHERIT) this@setLinearListLayout.nextFocusDownId else nextDown
-        android.util.Log.d("RTL_DEBUG", "setLinearListLayout layoutManager applied: nextFocusLeft=$nextFocusLeft nextFocusRight=$nextFocusRight")
+
+        android.util.Log.d("RTL_DEBUG", "setLinearListLayout -> APPLIED physical layoutManager limits | Left: $nextFocusLeft | Right: $nextFocusRight | Up: $nextFocusUp | Down: $nextFocusDown")
     }
 }
 
@@ -99,7 +110,7 @@ open class LinearListLayout(context: Context?) :
             FocusDirection.Up -> nextFocusUp
             FocusDirection.Down -> nextFocusDown
         }
-        android.util.Log.d("RTL_DEBUG", "getNextDirection: focused=$focused direction=$direction isLayoutRTL=$isLayoutRTL -> id=$id")
+        android.util.Log.d("RTL_DEBUG", "getNextDirection -> focused: ${focused?.id} (${focused?.javaClass?.simpleName}) | direction parameter: $direction | resolved id: $id")
 
         return when (id) {
             View.NO_ID -> null
@@ -128,6 +139,8 @@ open class LinearListLayout(context: Context?) :
     }
 
     override fun onInterceptFocusSearch(focused: View, direction: Int): View? {
+        android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch -> focused: ${focused.id} (${focused.javaClass.simpleName}) | requested direction: $direction | isLayoutRTL: $isLayoutRTL | orientation: $orientation")
+
         val dir = if (orientation == HORIZONTAL) {
             if (direction == View.FOCUS_DOWN) getNextDirection(
                 focused,
@@ -183,18 +196,19 @@ open class LinearListLayout(context: Context?) :
         try {
             val position = getPosition(getCorrectParent(focused)) ?: return null
             val lookFor = dir + position
-            android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch: focused=$focused direction=$direction isLayoutRTL=$isLayoutRTL dir=$dir position=$position lookFor=$lookFor itemCount=$itemCount")
+
+            android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch -> current pos: $position | dir step (-1 or 1): $dir | lookFor index: $lookFor | itemCount: $itemCount")
 
             // if out of bounds then refocus as specified
             return if (lookFor >= itemCount) {
                 val nextDir = if (orientation == HORIZONTAL) FocusDirection.End else FocusDirection.Down
                 val result = getNextDirection(focused, nextDir)
-                android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch OOB End: nextDir=$nextDir result=$result")
+                android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch -> OOB END (+ bounds). Mapped $nextDir Request -> returned: ${result?.id} (${result?.javaClass?.simpleName})")
                 result
             } else if (lookFor < 0) {
                 val nextDir = if (orientation == HORIZONTAL) FocusDirection.Start else FocusDirection.Up
                 val result = getNextDirection(focused, nextDir)
-                android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch OOB Start: nextDir=$nextDir result=$result")
+                android.util.Log.d("RTL_DEBUG", "onInterceptFocusSearch -> OOB START (- bounds). Mapped $nextDir Request -> returned: ${result?.id} (${result?.javaClass?.simpleName})")
                 result
             } else {
                 getViewFromPos(lookFor) ?: run {

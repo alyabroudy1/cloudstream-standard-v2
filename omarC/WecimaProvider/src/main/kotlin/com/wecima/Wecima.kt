@@ -136,12 +136,7 @@ class Wecima : BaseProvider() {
             val decodedUrl = decodeWecimaUrl(serverBtn.attr("data-url"))
             if (!decodedUrl.isNullOrBlank() && decodedUrl.startsWith("http")) {
                 linksFound = true
-                if (decodedUrl.contains("dood", ignoreCase = true)) {
-                    val snifferUrl = com.cloudstream.shared.extractors.SnifferExtractor.createSnifferUrl(decodedUrl, mainUrl)
-                    com.cloudstream.shared.extractors.SnifferExtractor().getUrl(snifferUrl, mainUrl, subtitleCallback, callback)
-                } else {
-                    loadExtractor(decodedUrl, subtitleCallback, callback)
-                }
+                loadExtractor(decodedUrl, subtitleCallback, callback)
             }
         }
         
@@ -149,12 +144,7 @@ class Wecima : BaseProvider() {
             val decodedUrl = decodeWecimaUrl(downloadBtn.attr("data-href"))
             if (!decodedUrl.isNullOrBlank() && decodedUrl.startsWith("http")) {
                 linksFound = true
-                if (decodedUrl.contains("dood", ignoreCase = true)) {
-                    val snifferUrl = com.cloudstream.shared.extractors.SnifferExtractor.createSnifferUrl(decodedUrl, mainUrl)
-                    com.cloudstream.shared.extractors.SnifferExtractor().getUrl(snifferUrl, mainUrl, subtitleCallback, callback)
-                } else {
-                    loadExtractor(decodedUrl, subtitleCallback, callback)
-                }
+                loadExtractor(decodedUrl, subtitleCallback, callback)
             }
         }
         

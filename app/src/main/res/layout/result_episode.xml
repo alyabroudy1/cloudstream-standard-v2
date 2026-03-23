@@ -8,7 +8,6 @@
     android:layout_height="50dp"
     android:layout_marginBottom="5dp"
 
-    android:nextFocusRight="@id/download_button"
     app:cardBackgroundColor="@color/transparent"
     app:cardCornerRadius="@dimen/rounded_image_radius"
     app:cardElevation="0dp"

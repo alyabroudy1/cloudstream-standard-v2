@@ -1,17 +1,20 @@
+
 package com.watanflix
 
-import com.lagradost.cloudstream3.*
-import com.cloudstream.shared.provider.BaseProvider
 import com.cloudstream.shared.parsing.NewBaseParser
+import com.cloudstream.shared.provider.BaseProvider
+import com.cloudstream.shared.ui.player.YouTubePlayer
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.api.Log
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.utils.Qualities
-import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.api.Log
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.youtube.innertube.InnerTubeClient
 import com.youtube.innertube.InnerTubeParser
-import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jsoup.Jsoup
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.AppUtils.toJson
@@ -99,7 +102,7 @@ class Watanflix : BaseProvider() {
         // Extract YouTube video ID from various URL formats
         val videoId = extractVideoId(data) ?: run {
             Log.w(TAG, "loadLinks: Could not extract video ID from $data, falling back to WebView")
-            launchWebViewPlayer(data)
+            launchWebViewPlayer(data, callback)
             return true
         }
         Log.d(TAG, "loadLinks: videoId=$videoId")
@@ -108,7 +111,7 @@ class Watanflix : BaseProvider() {
         val playerJson = InnerTubeClient.getPlayer(videoId)
         if (playerJson == null) {
             Log.e(TAG, "loadLinks: Player API returned null — falling back to WebView")
-            launchWebViewPlayer(data)
+            launchWebViewPlayer(data, callback)
             return true
         }
 
@@ -117,7 +120,7 @@ class Watanflix : BaseProvider() {
         if (status != "OK") {
             val reason = playerJson.path("playabilityStatus").path("reason").textValue() ?: "Unknown"
             Log.w(TAG, "loadLinks: Not playable: $status — $reason — falling back to WebView")
-            launchWebViewPlayer(data)
+            launchWebViewPlayer(data, callback)
             return true
         }
 
@@ -195,7 +198,7 @@ class Watanflix : BaseProvider() {
         // ── Tier 4: WebView last resort ──
         if (linksEmitted == 0) {
             Log.w(TAG, "loadLinks: No links emitted from any tier — falling back to WebView")
-            launchWebViewPlayer(data)
+            launchWebViewPlayer(data, callback)
         }
 
         Log.d(TAG, "loadLinks: Done — $linksEmitted links emitted (${result.adaptiveFormats.size} adaptive, ${result.muxedFormats.size} muxed)")
@@ -233,13 +236,28 @@ class Watanflix : BaseProvider() {
         else -> Qualities.Unknown.value
     }
 
-    private fun launchWebViewPlayer(url: String) {
-        CommonActivity.activity?.let { activity ->
-            if (activity is android.app.Activity) {
-                activity.runOnUiThread {
-                    val dialog = com.cloudstream.shared.ui.player.YouTubePlayer(activity, url)
-                    dialog.show()
+    private suspend fun launchWebViewPlayer(url: String, callback: (ExtractorLink) -> Unit) {
+        kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
+            CommonActivity.activity?.let { activity ->
+                if (activity is android.app.Activity) {
+                    activity.runOnUiThread {
+                        val dialog = com.cloudstream.shared.ui.player.YouTubePlayer(activity, url)
+                        dialog.setOnDismissListener {
+                            if (cont.isActive) {
+                                cont.resume(Unit) {}
+                            }
+                        }
+                        dialog.show()
+                        
+                        cont.invokeOnCancellation {
+                            dialog.dismiss()
+                        }
+                    }
+                } else if (cont.isActive) {
+                    cont.resume(Unit) {}
                 }
+            } ?: run {
+                if (cont.isActive) cont.resume(Unit) {}
             }
         }
     }

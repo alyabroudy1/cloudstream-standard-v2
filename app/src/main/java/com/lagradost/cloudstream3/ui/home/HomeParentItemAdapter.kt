@@ -124,7 +124,7 @@ open class ParentItemAdapter(
             }
 
             // LinearListLayout handles RTL mapping internally
-            // (Start → nextFocusRight in RTL), so use physical LTR order.
+            // (Start → nextFocusRight in RTL), so use nextStart/nextEnd
             homeChildRecyclerview.setLinearListLayout(
                 isHorizontal = true,
                 nextStart = startFocus,

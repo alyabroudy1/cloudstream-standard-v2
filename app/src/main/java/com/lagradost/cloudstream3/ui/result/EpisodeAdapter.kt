@@ -3,6 +3,7 @@ package com.lagradost.cloudstream3.ui.result
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -189,6 +190,17 @@ class EpisodeAdapter(
                 if (isLayout(PHONE or EMULATOR) && CommonActivity.appliedTheme == R.style.AmoledMode) {
                     episodeHolderLarge.radius = 0.0f
                     episodeHolder.setPadding(0)
+                }
+
+                if (isLayout(TV)) {
+                    val isRtl = binding.root.context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+                    if (isRtl) {
+                        episodeHolderLarge.nextFocusLeftId = R.id.download_button
+                        downloadButton.nextFocusRightId = R.id.episode_holder_large
+                    } else {
+                        episodeHolderLarge.nextFocusRightId = R.id.download_button
+                        downloadButton.nextFocusLeftId = R.id.episode_holder_large
+                    }
                 }
 
                 downloadButton.isVisible = hasDownloadSupport
@@ -386,6 +398,16 @@ class EpisodeAdapter(
             }
 
             binding.apply {
+                if (isLayout(TV)) {
+                    val isRtl = binding.root.context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+                    if (isRtl) {
+                        episodeHolder.nextFocusLeftId = R.id.download_button
+                        downloadButton.nextFocusRightId = R.id.episode_holder
+                    } else {
+                        episodeHolder.nextFocusRightId = R.id.download_button
+                        downloadButton.nextFocusLeftId = R.id.episode_holder
+                    }
+                }
                 downloadButton.isVisible = hasDownloadSupport
                 downloadButton.setDefaultClickListener(
                     VideoDownloadHelper.DownloadEpisodeCached(

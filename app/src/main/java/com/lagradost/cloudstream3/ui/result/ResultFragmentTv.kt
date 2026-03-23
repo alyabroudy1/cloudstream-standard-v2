@@ -441,8 +441,7 @@ class ResultFragmentTv : Fragment() {
             //   D-pad RIGHT → FocusDirection.End → reads nextFocusLeft in RTL
             // So RecyclerViews must use PHYSICAL LTR directions (left=outward, right=inward)
             // to avoid double-swapping. Only regular Views (no LinearListLayout) need
-            // manual RTL swapping.
-            val isRtl = view.isRtl()
+            val isRtl = view.context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
 
             // Episodes show button is a regular View (no LinearListLayout),
             // so it needs manual RTL swap for the direction that opens the panel.
@@ -452,25 +451,44 @@ class ResultFragmentTv : Fragment() {
                 resultEpisodesShowButton.nextFocusRightId = R.id.redirect_to_episodes
             }
 
-            // Episode panel chain (RecyclerViews with LinearListLayout):
-            // Use physical LTR order — LinearListLayout handles RTL mapping internally.
-            // left = outward (toward main content), right = inward (deeper into panel)
-            resultDubSelection.nextFocusLeftId = R.id.result_episodes_show
-            resultDubSelection.nextFocusRightId = R.id.result_season_selection
+            // Episode panel chain: dub → season → range → episodes
+            // In LTR: panel is on the RIGHT, so LEFT=back out, RIGHT=deeper
+            // In RTL: panel is on the LEFT, so RIGHT=back out, LEFT=deeper
+            // "outward" = physical direction toward main content
+            // "inward" = physical direction deeper into the panel
+            if (isRtl) {
+                // RTL: panel on LEFT side. RIGHT=outward, LEFT=inward
+                resultDubSelection.nextFocusRightId = R.id.result_episodes_show
+                resultDubSelection.nextFocusLeftId = R.id.result_season_selection
 
-            resultSeasonSelection.nextFocusLeftId = R.id.result_dub_selection
-            resultSeasonSelection.nextFocusRightId = R.id.result_range_selection
+                resultSeasonSelection.nextFocusRightId = R.id.result_dub_selection
+                resultSeasonSelection.nextFocusLeftId = R.id.result_range_selection
 
-            resultRangeSelection.nextFocusLeftId = R.id.result_season_selection
-            resultRangeSelection.nextFocusRightId = R.id.result_episodes
+                resultRangeSelection.nextFocusRightId = R.id.result_season_selection
+                resultRangeSelection.nextFocusLeftId = R.id.result_episodes
 
-            resultEpisodes.nextFocusLeftId = R.id.result_range_selection
+                resultEpisodes.nextFocusRightId = R.id.result_range_selection
+            } else {
+                // LTR: panel on RIGHT side. LEFT=outward, RIGHT=inward
+                resultDubSelection.nextFocusLeftId = R.id.result_episodes_show
+                resultDubSelection.nextFocusRightId = R.id.result_season_selection
+
+                resultSeasonSelection.nextFocusLeftId = R.id.result_dub_selection
+                resultSeasonSelection.nextFocusRightId = R.id.result_range_selection
+
+                resultRangeSelection.nextFocusLeftId = R.id.result_season_selection
+                resultRangeSelection.nextFocusRightId = R.id.result_episodes
+
+                resultEpisodes.nextFocusLeftId = R.id.result_range_selection
+            }
 
             resultEpisodes.setLinearListLayout(
                 isHorizontal = false,
                 nextUp = FOCUS_SELF,
                 nextDown = FOCUS_SELF,
+                // Block the "inward" end: FOCUS_SELF on the far side
                 nextEnd = FOCUS_SELF,
+                nextStart = View.NO_ID,
             )
             resultDubSelection.setLinearListLayout(
                 isHorizontal = false,

@@ -25,7 +25,6 @@ import com.lagradost.cloudstream3.ui.search.SearchResultBuilder
 import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
 import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
-import com.lagradost.cloudstream3.utils.AppContextUtils.setNextFocusStartId
 import com.lagradost.cloudstream3.utils.UIHelper.isBottomLayout
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
 
@@ -198,7 +197,7 @@ open class HomeChildItemAdapter(
                 updateLayoutParms(binding.backgroundCard, setWidth, setHeight)
 
                 if (isFirstItem) { // to fix tv
-                    binding.backgroundCard.setNextFocusStartId(R.id.nav_rail_view)
+                    binding.backgroundCard.nextFocusLeftId = R.id.nav_rail_view
                 }
             }
 
@@ -206,7 +205,7 @@ open class HomeChildItemAdapter(
                 updateLayoutParms(binding.backgroundCard, setWidth, setHeight)
 
                 if (isFirstItem) { // to fix tv
-                    binding.backgroundCard.setNextFocusStartId(R.id.nav_rail_view)
+                    binding.backgroundCard.nextFocusLeftId = R.id.nav_rail_view
                 }
             }
         }

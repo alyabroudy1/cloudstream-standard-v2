@@ -766,12 +766,12 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             // when first loading up the app
 
             // R.id.navigation_home -> R.id.home_preview_change_api
-            R.id.navigation_search -> R.id.main_search
+            R.id.navigation_search -> R.id.search_history_holder
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
-            else -> null
+            else -> View.NO_ID
         }
-        if (targetView != null && isLayout(TV or EMULATOR)) {
+        if (isLayout(TV or EMULATOR)) {
             val fromView = binding?.navRailView
             if (fromView != null) {
                 // In RTL, pressing DPAD away from the rail = FocusDirection.End

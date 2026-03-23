@@ -11,7 +11,7 @@ import java.net.URLEncoder
 class MyCimaClone : BaseProvider() {
     override val baseDomain get() = "mycima.horse"
     override val providerName get() = "MyCimaClone"
-    override val githubConfigUrl get() = "https://raw.githubusercontent.com/alyabroudy1/omarC/main/configs/mycima.json"
+    override val githubConfigUrl get() = "https://raw.githubusercontent.com/alyabroudy1/omarC/main/configs/mycimaclone.json"
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime, TvType.AsianDrama)
 
     override val mainPage = mainPageOf(

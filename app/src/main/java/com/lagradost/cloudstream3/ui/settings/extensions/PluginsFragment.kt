@@ -153,7 +153,7 @@ class PluginsFragment : Fragment() {
         binding?.pluginRecyclerView?.setLinearListLayout(
             isHorizontal = false,
             nextDown = FOCUS_SELF,
-            nextEnd = FOCUS_SELF,
+            nextRight = FOCUS_SELF,
         )
 
         binding?.pluginRecyclerView?.adapter =
