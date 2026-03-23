@@ -456,12 +456,12 @@ class HomeParentItemAdapterPreview(
             bookmarkRecyclerView.adapter = bookmarkAdapter
 
             resumeRecyclerView.setLinearListLayout(
-                nextLeft = R.id.nav_rail_view,
-                nextRight = FOCUS_SELF
+                nextStart = R.id.nav_rail_view,
+                nextEnd = FOCUS_SELF
             )
             bookmarkRecyclerView.setLinearListLayout(
-                nextLeft = R.id.nav_rail_view,
-                nextRight = FOCUS_SELF
+                nextStart = R.id.nav_rail_view,
+                nextEnd = FOCUS_SELF
             )
 
             fixPaddingStatusbarMargin(topPadding)

@@ -158,6 +158,7 @@
         android:layout_height="wrap_content"
         android:descendantFocusability="afterDescendants"
         android:nextFocusLeft="@id/navigation_home"
+        android:nextFocusRight="@id/navigation_home"
         android:nextFocusUp="@id/home_bookmarked_child_recyclerview"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/homepage_parent_tv"

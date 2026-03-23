@@ -127,8 +127,8 @@ open class ParentItemAdapter(
             // (Start → nextFocusRight in RTL), so use physical LTR order.
             homeChildRecyclerview.setLinearListLayout(
                 isHorizontal = true,
-                nextLeft = startFocus,
-                nextRight = endFocus,
+                nextStart = startFocus,
+                nextEnd = endFocus,
             )
             homeChildMoreInfo.text = info.name
 

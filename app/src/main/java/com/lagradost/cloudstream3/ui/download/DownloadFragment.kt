@@ -207,7 +207,7 @@ class DownloadFragment : Fragment() {
             this.adapter = adapter
             setLinearListLayout(
                 isHorizontal = false,
-                nextRight = FOCUS_SELF,
+                nextEnd = FOCUS_SELF,
                 nextDown = FOCUS_SELF,
             )
         }

@@ -311,6 +311,7 @@
 
                     android:descendantFocusability="afterDescendants"
                     android:nextFocusLeft="@id/navigation_home"
+                    android:nextFocusRight="@id/navigation_home"
                     android:nextFocusUp="@id/home_watch_child_recyclerview"
                     android:nextFocusDown="@id/home_bookmarked_child_recyclerview"
                     android:orientation="horizontal">
@@ -396,6 +397,7 @@
 
             android:descendantFocusability="afterDescendants"
             android:nextFocusLeft="@id/navigation_home"
+            android:nextFocusRight="@id/navigation_home"
             android:nextFocusUp="@id/home_type_holder"
 
             android:nextFocusDown="@id/home_child_recyclerview"

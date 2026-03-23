@@ -133,6 +133,7 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.isCastApiAvailable
 import com.lagradost.cloudstream3.utils.AppContextUtils.isLtr
 import com.lagradost.cloudstream3.utils.AppContextUtils.isNetworkAvailable
 import com.lagradost.cloudstream3.utils.AppContextUtils.isRtl
+import com.lagradost.cloudstream3.utils.AppContextUtils.setNextFocusEndId
 import com.lagradost.cloudstream3.utils.AppContextUtils.loadCache
 import com.lagradost.cloudstream3.utils.AppContextUtils.loadRepository
 import com.lagradost.cloudstream3.utils.AppContextUtils.loadResult
@@ -773,7 +774,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         if (targetView != null && isLayout(TV or EMULATOR)) {
             val fromView = binding?.navRailView
             if (fromView != null) {
-                fromView.nextFocusRightId = targetView
+                // In RTL, pressing DPAD away from the rail = FocusDirection.End
+                // which reads nextFocusLeftId, so we must set the correct field.
+                fromView.setNextFocusEndId(targetView)
 
                 for (focusView in arrayOf(
                     R.id.navigation_downloads,
@@ -782,7 +785,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_library,
                     R.id.navigation_settings,
                 )) {
-                    fromView.findViewById<View?>(focusView)?.nextFocusRightId = targetView
+                    fromView.findViewById<View?>(focusView)?.setNextFocusEndId(targetView)
                 }
             }
         }

@@ -470,7 +470,7 @@ class ResultFragmentTv : Fragment() {
                 isHorizontal = false,
                 nextUp = FOCUS_SELF,
                 nextDown = FOCUS_SELF,
-                nextRight = FOCUS_SELF,
+                nextEnd = FOCUS_SELF,
             )
             resultDubSelection.setLinearListLayout(
                 isHorizontal = false,

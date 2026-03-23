@@ -130,6 +130,33 @@ object AppContextUtils {
     fun View.isLtr() = this.layoutDirection == LAYOUT_DIRECTION_LTR
     fun View.isRtl() = this.layoutDirection == LAYOUT_DIRECTION_RTL
 
+    /**
+     * Sets the focus target for the "start" direction (towards the nav rail).
+     * CommonActivity.getNextFocus() maps:
+     *   FocusDirection.Start → nextFocusLeftId (LTR) or nextFocusRightId (RTL)
+     * So we set the correct physical field.
+     */
+    fun View.setNextFocusStartId(id: Int) {
+        if (isRtl()) {
+            nextFocusRightId = id
+        } else {
+            nextFocusLeftId = id
+        }
+    }
+
+    /**
+     * Sets the focus target for the "end" direction (away from the nav rail).
+     * CommonActivity.getNextFocus() maps:
+     *   FocusDirection.End → nextFocusRightId (LTR) or nextFocusLeftId (RTL)
+     */
+    fun View.setNextFocusEndId(id: Int) {
+        if (isRtl()) {
+            nextFocusLeftId = id
+        } else {
+            nextFocusRightId = id
+        }
+    }
+
     fun BottomSheetDialog?.ownHide() {
         this?.hide()
     }

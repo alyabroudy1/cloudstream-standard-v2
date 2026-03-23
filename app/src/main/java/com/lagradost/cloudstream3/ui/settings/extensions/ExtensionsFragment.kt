@@ -94,8 +94,8 @@ class ExtensionsFragment : Fragment() {
                 isHorizontal = false,
                 nextUp = R.id.settings_toolbar, //FOCUS_SELF, // back has no id so we cant :pensive:
                 nextDown = R.id.plugin_storage_appbar,
-                nextRight = FOCUS_SELF,
-                nextLeft = R.id.nav_rail_view
+                nextEnd = FOCUS_SELF,
+                nextStart = R.id.nav_rail_view
             )
 
             if (!isLayout(TV))

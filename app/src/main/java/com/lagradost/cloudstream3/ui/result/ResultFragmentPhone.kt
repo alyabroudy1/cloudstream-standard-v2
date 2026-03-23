@@ -387,8 +387,8 @@ open class ResultFragmentPhone : FullScreenPlayer() {
 
             resultCastItems.setLinearListLayout(
                 isHorizontal = true,
-                nextLeft = FOCUS_SELF,
-                nextRight = FOCUS_SELF
+                nextStart = FOCUS_SELF,
+                nextEnd = FOCUS_SELF
             )
             /*resultCastItems.layoutManager = object : LinearListLayout(view.context) {
                 override fun onRequestChildFocus(

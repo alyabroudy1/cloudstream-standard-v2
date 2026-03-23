@@ -68,6 +68,8 @@ import com.lagradost.cloudstream3.ui.settings.Globals.PHONE
 import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.utils.AppContextUtils.isUsingMobileData
+import com.lagradost.cloudstream3.utils.AppContextUtils.setNextFocusEndId
+import com.lagradost.cloudstream3.utils.AppContextUtils.setNextFocusStartId
 import com.lagradost.cloudstream3.utils.BackPressedCallbackHelper.attachBackPressedCallback
 import com.lagradost.cloudstream3.utils.BackPressedCallbackHelper.detachBackPressedCallback
 import com.lagradost.cloudstream3.utils.DataStoreHelper
@@ -1895,6 +1897,24 @@ open class FullScreenPlayer : AbstractPlayerFragment() {
                         text.isVisible = true
                     }
                 }
+                
+                // Programmatically apply logical RTL-aware focus bridging for the top top TV player buttons:
+                playerGoBack.setNextFocusStartId(R.id.player_go_back)
+                playerGoBack.setNextFocusEndId(R.id.player_restart)
+
+                playerRestart.setNextFocusStartId(R.id.player_go_back)
+                playerRestart.setNextFocusEndId(R.id.player_go_forward)
+
+                playerGoForward.setNextFocusStartId(R.id.player_restart)
+                playerGoForward.setNextFocusEndId(R.id.download_header_toggle)
+
+                downloadHeaderToggle.setNextFocusStartId(R.id.player_go_forward)
+                downloadHeaderToggle.setNextFocusEndId(R.id.player_episodes_button)
+
+                playerEpisodesButton.setNextFocusStartId(R.id.download_header_toggle)
+                playerEpisodesButton.setNextFocusEndId(R.id.player_episode_overlay)
+
+                playerEpisodeList.setNextFocusStartId(R.id.player_episodes_button)
             }
 
             playerPausePlay.setOnClickListener {

@@ -590,13 +590,15 @@ class SearchFragment : Fragment() {
 
         binding?.apply {
             searchHistoryRecycler.adapter = historyAdapter
-            searchHistoryRecycler.setLinearListLayout(isHorizontal = false, nextRight = FOCUS_SELF)
+            searchHistoryRecycler.setLinearListLayout(isHorizontal = false, nextEnd = FOCUS_SELF)
             //searchHistoryRecycler.layoutManager = GridLayoutManager(context, 1)
 
             searchMasterRecycler.adapter = masterAdapter
-            //searchMasterRecycler.setLinearListLayout(isHorizontal = false, nextRight = FOCUS_SELF)
-
-            searchMasterRecycler.layoutManager = GridLayoutManager(context, 1)
+            searchMasterRecycler.setLinearListLayout(
+                isHorizontal = false,
+                nextStart = R.id.nav_rail_view,
+                nextEnd = FOCUS_SELF
+            )
 
             // Automatically search the specified query, this allows the app search to launch from intent
             var sq = arguments?.getString(SEARCH_QUERY) ?: savedInstanceState?.getString(SEARCH_QUERY)

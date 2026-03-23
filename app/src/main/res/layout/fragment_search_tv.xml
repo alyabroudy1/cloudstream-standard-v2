@@ -124,6 +124,7 @@
         android:clipToPadding="false"
         android:descendantFocusability="afterDescendants"
         android:nextFocusLeft="@id/navigation_search"
+        android:nextFocusRight="@id/navigation_search"
         android:orientation="vertical"
         android:paddingStart="8dp"
         android:paddingTop="5dp"
@@ -140,6 +141,7 @@
         android:background="?attr/primaryBlackBackground"
         android:descendantFocusability="afterDescendants"
         android:nextFocusLeft="@id/navigation_search"
+        android:nextFocusRight="@id/navigation_search"
         android:nextFocusUp="@id/tvtypes_chips"
         android:nextFocusDown="@id/search_clear_call_history"
         android:visibility="gone"
@@ -159,6 +161,7 @@
 
             android:descendantFocusability="afterDescendants"
             android:nextFocusLeft="@id/navigation_search"
+            android:nextFocusRight="@id/navigation_search"
             android:nextFocusUp="@id/tvtypes_chips"
             android:nextFocusDown="@id/search_clear_call_history"
             android:tag = "@string/tv_no_focus_tag"
