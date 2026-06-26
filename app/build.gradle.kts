@@ -227,6 +227,7 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.work.runtime.ktx)
     implementation(libs.nicehttp) // HTTP Lib
+    implementation(libs.cronet.embedded) // Chromium TLS for ExoPlayer media requests
 
     implementation(project(":library") {
         // There does not seem to be a good way of getting the android flavor.
