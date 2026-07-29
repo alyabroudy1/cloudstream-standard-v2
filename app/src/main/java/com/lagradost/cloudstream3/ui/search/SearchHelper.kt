@@ -32,12 +32,29 @@ object SearchHelper {
             SEARCH_ACTION_LOAD -> {
                 // Intercept lazy search placeholder clicks
                 if (card.url.contains(LAZY_SEARCH_PREFIX)) {
-                    val providerName = card.url.substringAfter(LAZY_SEARCH_PREFIX)
-                    android.util.Log.d("LazySearch", "SearchHelper intercepted lazy URL. Extracting providerName='$providerName'")
+                    // Placeholder URL is "<prefix><providerName>?q=<urlencoded query>". The query is
+                    // carried here rather than looked up in SearchViewModel, because the ViewModel
+                    // that ran the search is not necessarily the one resolved below: quick search
+                    // scopes its ViewModel to the fragment, this resolves the activity-scoped one.
+                    fun decode(value: String): String? = try {
+                        java.net.URLDecoder.decode(value, "UTF-8")
+                    } catch (e: Exception) {
+                        null
+                    }
+
+                    val payload = card.url.substringAfter(LAZY_SEARCH_PREFIX)
+                    // Both segments are percent-encoded by the provider; a provider name can be
+                    // non-ASCII, so decode rather than comparing the raw segment.
+                    val rawProvider = payload.substringBefore("?")
+                    val providerName = decode(rawProvider) ?: rawProvider
+                    val query = payload.substringAfter("?q=", "")
+                        .takeIf { it.isNotBlank() }
+                        ?.let { decode(it) }
+                    android.util.Log.d("LazySearch", "SearchHelper intercepted lazy URL. providerName='$providerName', query='$query'")
                     (activity as? FragmentActivity)?.let { act ->
                         val searchViewModel = ViewModelProvider(act)[SearchViewModel::class.java]
                         android.util.Log.d("LazySearch", "SearchHelper found ViewModel. Calling resolveLazySearch...")
-                        searchViewModel.resolveLazySearch(providerName)
+                        searchViewModel.resolveLazySearch(providerName, query)
                     } ?: run {
                         android.util.Log.e("LazySearch", "SearchHelper Activity is NOT FragmentActivity. Failed to get ViewModel. activity=$activity")
                     }

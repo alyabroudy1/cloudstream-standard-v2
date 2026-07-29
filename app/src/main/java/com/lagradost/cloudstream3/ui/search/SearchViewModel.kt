@@ -237,13 +237,23 @@ class SearchViewModel : ViewModel() {
      * for a single provider that was previously blocked by Cloudflare.
      * Called when the user taps a "Tap to search" placeholder card.
      */
-    fun resolveLazySearch(providerName: String) = viewModelScope.launchSafe {
-        android.util.Log.d("LazySearch", "SearchViewModel.resolveLazySearch called for provider='$providerName'")
-        val query = lazyProviders.remove(providerName)
+    /**
+     * @param requestedQuery the query carried in the placeholder's own URL. Prefer it over
+     * [lazyProviders]: the ViewModel that ran the search is not necessarily this one — quick search
+     * scopes its ViewModel to the fragment while the tap handler resolves the activity-scoped
+     * instance — and neither survives the activity being recreated. The map is kept only as a
+     * fallback for placeholders minted before the query was embedded in the URL.
+     */
+    fun resolveLazySearch(providerName: String, requestedQuery: String? = null) = viewModelScope.launchSafe {
+        android.util.Log.d("LazySearch", "SearchViewModel.resolveLazySearch called for provider='$providerName', requestedQuery='$requestedQuery'")
+        val query = requestedQuery?.takeIf { it.isNotBlank() }
+            ?: lazyProviders.remove(providerName)
+            ?: lastQuery
         if (query == null) {
-            android.util.Log.e("LazySearch", "SearchViewModel -> No query found in lazyProviders for '$providerName'. Map contents: ${lazyProviders.keys}")
+            android.util.Log.e("LazySearch", "SearchViewModel -> No query for '$providerName': none in the placeholder URL, none in lazyProviders (contents: ${lazyProviders.keys}), no lastQuery")
             return@launchSafe
         }
+        lazyProviders.remove(providerName)
         val repo = repos.find { it.name == providerName }
         if (repo == null) {
             android.util.Log.e("LazySearch", "SearchViewModel -> No repo found for providerName '$providerName'")
