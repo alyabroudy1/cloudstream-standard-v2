@@ -44,6 +44,7 @@ tvprovider = "1.1.0"
 video = "1.0.0"
 workRuntime = "2.10.5"
 workRuntimeKtx = "2.10.5"
+cronet = "119.6045.31"
 
 jvmTarget = "1.8"
 minSdk = "21"
@@ -81,6 +82,7 @@ lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx
 material = { module = "com.google.android.material:material", version.ref = "material" }
 media3-cast = { module = "androidx.media3:media3-cast", version.ref = "media3" }
 media3-common = { module = "androidx.media3:media3-common", version.ref = "media3" }
+media3-datasource-cronet = { module = "androidx.media3:media3-datasource-cronet", version.ref = "media3" }
 media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "media3" }
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
 media3-exoplayer-dash = { module = "androidx.media3:media3-exoplayer-dash", version.ref = "media3" }
@@ -109,10 +111,11 @@ tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "tvprovi
 video = { module = "com.google.android.mediahome:video", version.ref = "video" }
 work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
+cronet-embedded = { module = "org.chromium.net:cronet-embedded", version.ref = "cronet" }
 
 [plugins]
 
 [bundles]
-media3 = ["media3-cast", "media3-common", "media3-datasource-okhttp", "media3-exoplayer", "media3-exoplayer-dash", "media3-exoplayer-hls", "media3-session", "media3-ui"]
+media3 = ["media3-cast", "media3-common", "media3-datasource-okhttp", "media3-datasource-cronet", "media3-exoplayer", "media3-exoplayer-dash", "media3-exoplayer-hls", "media3-session", "media3-ui"]
 nextlibMedia3 = ["nextlib-media3ext", "nextlib-mediainfo"]
 navigationKtx = ["navigation-ui-ktx", "navigation-fragment-ktx"]

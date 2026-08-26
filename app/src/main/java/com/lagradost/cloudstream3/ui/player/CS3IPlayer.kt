@@ -38,6 +38,8 @@ import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.datasource.cronet.CronetDataSource
+import org.chromium.net.CronetEngine
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -657,9 +659,40 @@ class CS3IPlayer : IPlayer {
             }
 
         private var simpleCache: SimpleCache? = null
+
+        /**
+         * Lazy-init CroNet engine. Uses Chromium's TLS stack (identical JA3 fingerprint
+         * to Chrome/WebView) so CDNs that block OkHttp's BoringSSL fingerprint will
+         * serve media without 403. Falls back to OkHttp if CroNet init fails.
+         */
+        private val cronetEngine: CronetEngine? by lazy {
+            try {
+                CronetEngine.Builder(com.lagradost.cloudstream3.AcraApplication.context ?: return@lazy null)
+                    .enableQuic(true)
+                    .enableHttp2(true)
+                    .enableBrotli(true)
+                    .build()
+            } catch (t: Throwable) {
+                Log.w(TAG, "CroNet init failed, falling back to OkHttp for media", t)
+                null
+            }
+        }
+
+        /**
+         * Build a CroNet-backed DataSource.Factory if available, otherwise OkHttp.
+         */
+        private fun buildCronetSource(userAgent: String): HttpDataSource.Factory {
+            val engine = cronetEngine
+            return if (engine != null) {
+                CronetDataSource.Factory(engine, java.util.concurrent.Executors.newCachedThreadPool())
+                    .setUserAgent(userAgent)
+            } else {
+                OkHttpDataSource.Factory(app.baseClient).setUserAgent(userAgent)
+            }
+        }
+
         private fun createOnlineSource(headers: Map<String, String>): HttpDataSource.Factory {
-            val source = OkHttpDataSource.Factory(app.baseClient).setUserAgent(USER_AGENT)
-            return source.apply {
+            return buildCronetSource(USER_AGENT).apply {
                 setDefaultRequestProperties(headers)
             }
         }
@@ -672,10 +705,15 @@ class CS3IPlayer : IPlayer {
             }?.value
 
             val source = if (interceptor == null) {
-                DefaultHttpDataSource.Factory() //TODO USE app.baseClient
-                    .setUserAgent(userAgent ?: USER_AGENT)
-                    .setAllowCrossProtocolRedirects(true)   //https://stackoverflow.com/questions/69040127/error-code-io-bad-http-status-exoplayer-android
+                // CroNet path: Chrome TLS fingerprint for media requests
+                buildCronetSource(userAgent ?: USER_AGENT)
+                    .apply {
+                        if (this is CronetDataSource.Factory) {
+                            setKeepPostFor302Redirects(true)
+                        }
+                    }
             } else {
+                // Interceptor path: must use OkHttp for custom interceptors
                 val client = app.baseClient.newBuilder()
                     .addInterceptor(interceptor)
                     .build()
@@ -685,9 +723,20 @@ class CS3IPlayer : IPlayer {
             // Do no include empty referer, if the provider wants those they can use the header map.
             val refererMap =
                 if (link.referer.isBlank()) emptyMap() else mapOf("referer" to link.referer)
+
+            // Dynamic sec-ch-ua from actual WebView Chrome version
+            val chromeVersion = try {
+                val ctx = com.lagradost.cloudstream3.AcraApplication.context
+                if (ctx != null) {
+                    val ua = android.webkit.WebSettings.getDefaultUserAgent(ctx)
+                    val match = Regex("""Chrome/(\d+)""").find(ua)
+                    match?.groupValues?.get(1) ?: "120"
+                } else "120"
+            } catch (_: Exception) { "120" }
+
             val headers = mapOf(
                 "accept" to "*/*",
-                "sec-ch-ua" to "\"Chromium\";v=\"91\", \" Not;A Brand\";v=\"99\"",
+                "sec-ch-ua" to """"Not(A:Brand";v="8", "Chromium";v="$chromeVersion", "Google Chrome";v="$chromeVersion"""",
                 "sec-ch-ua-mobile" to "?0",
                 "sec-fetch-user" to "?1",
                 "sec-fetch-mode" to "navigate",
